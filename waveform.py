@@ -11,7 +11,7 @@ def parse_arguments() -> WaveformConfig:
                     "and optionally add GW memory, clipping, and plotting."
     )
 
-    parser.add_argument("--m-absolute", type=float, default=1e-7,
+    parser.add_argument("--m-absolute", type=float, default=1e-6,
                         help="Total mass scale of the system in solar masses (M_sun).")
     
     parser.add_argument("--q", type=float, default=1,
@@ -26,10 +26,10 @@ def parse_arguments() -> WaveformConfig:
     parser.add_argument("--eccentricity", type=float, default=0.0,
                         help="Eccentricity of the orbit.")
 
-    parser.add_argument("--low_freq", type=float, default=1e9,
+    parser.add_argument("--low_freq", type=float, default=1e8,
                         help="Lower frequency bound of waveform (Hz).")
     
-    parser.add_argument("--high_freq", type=float, default=1e12,
+    parser.add_argument("--high_freq", type=float, default=1e11,
                         help="Upper frequency bound of waveform (Hz).")
     
     parser.add_argument("--tc", type=float, default=0.0,
@@ -65,11 +65,11 @@ def parse_arguments() -> WaveformConfig:
     parser.add_argument("--output", type=str, default=None,
                         help="Output filename stem (without extension).")
 
-    parser.add_argument("--density-factor", type=float, default=1.0, help="Density scaling factor applied to the waveform.")
+    parser.add_argument("--density-factor", type=float, default=2.0, help="Density scaling factor applied to the waveform.")
 
-    parser.add_argument("--clip-th1", type=float, default=0.5e1, help="Primary clipping threshold (relative amplitude).")
+    parser.add_argument("--clip-th1", type=float, default=0.2, help="Primary clipping threshold (relative amplitude).")
 
-    parser.add_argument("--clip-th2", type=float, default=1e4, help="Secondary clipping threshold for tail removal.")
+    parser.add_argument("--clip-th2", type=float, default=1e-4, help="Secondary clipping threshold for tail removal.")
 
     args = parser.parse_args()
     

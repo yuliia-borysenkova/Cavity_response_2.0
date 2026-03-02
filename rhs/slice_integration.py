@@ -15,7 +15,7 @@ def compute_area_integral(cavity, mode, Bvec, x_vec, k, e1, e2):
         Y = np.array(coords)
 
         # Convert Cartesian B into cavity-native components
-        B_native = cavity.cart_vec_to_native(Bvec, *coords)
+        B_native = cavity.cart_vec_to_native(Bvec, Y)
 
         return np.vdot(mode.E(Y), B_native)
 
