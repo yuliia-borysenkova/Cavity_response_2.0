@@ -1,18 +1,25 @@
 import numpy as np
 from .base import Cavity
 from scipy import integrate
-from geometry.geometry import SphericalGeometry
 
 class SphericalCavity(Cavity):
     def __init__(self, R: float, **params):
         super().__init__(**params)
         self.R = float(R)
-        self._geometry = SphericalGeometry(R=self.R)
 
+    # ---------------- integration geometry ----------------
     @property
-    def geometry(self) -> SphericalGeometry:
-        return self._geometry
+    def bounds(self):
+        return [
+            (0.0, self.R),
+            (0.0, np.pi),
+            (0.0, 2 * np.pi),
+        ]
 
+    def jacobian(self, Y):
+        r, theta, _ = Y
+        return r ** 2 * np.sin(theta)
+    
     # ---------------- coordinate conversion ----------------
     def cart_to_native(self, X):
         x, y, z = X

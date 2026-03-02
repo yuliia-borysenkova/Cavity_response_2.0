@@ -119,7 +119,7 @@ def main():
              a=(args.a if args.geometry == "rectangular" else np.nan),
              b=(args.b if args.geometry == "rectangular" else np.nan),
              c=(args.c if args.geometry == "rectangular" else np.nan),
-             omega = mode.omega, pol=args.pol, N_theta=args.N_theta, N_phi=args.N_phi,
+             omega = mode.omega(), pol=args.pol, N_theta=args.N_theta, N_phi=args.N_phi,
              theta=theta_vals, phi=phi_vals, eta_a=eta_a, eta_b=eta_b, eta=eta, C=C)
     
     print(f"[INFO] Results saved to {save_dir}/{save_file}.npz")
