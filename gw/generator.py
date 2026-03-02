@@ -42,9 +42,9 @@ class WaveformConfig:
     output: Optional[str] = None
 
     # Optional hyperparameters
-    density_factor: Optional[float] = 1.0
-    clip_th1: Optional[float] = 0.5e1
-    clip_th2: Optional[float] = 1e4
+    density_factor: Optional[float] = 2.0
+    clip_th1: Optional[float] = 0.2
+    clip_th2: Optional[float] = 1e-4
 
 
 class WaveformPipeline:
@@ -82,7 +82,7 @@ class WaveformPipeline:
 
         if self.cfg.clip:
             print("[INFO] Clipping waveform")
-            data = clip_waveform(data, self.cfg.plot, self.cfg.clip_th1, self.cfg.clip_th2)
+            data = clip_waveform(data, self.cfg.clip_th1, self.cfg.clip_th2, self.cfg.plot)
 
         if self.cfg.polarization_angle != 0: # Should this go before or after memory?
             print(f"========== Rotating by polarization angle {self.cfg.polarization_angle} rad ========== ")

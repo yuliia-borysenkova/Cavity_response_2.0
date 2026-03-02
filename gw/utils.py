@@ -1,7 +1,8 @@
-import os
+import os, json
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+from dataclasses import asdict
 
 def load_waveform(directory, derivative=0):
 

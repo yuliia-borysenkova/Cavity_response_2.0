@@ -3,24 +3,37 @@ import matplotlib.pyplot as plt
 from gwmemory import time_domain_memory
 from gw.utils import plot_waveform
 
-def clip_waveform(data, clip_th1=0.5e1, clip_th2=1e4, plot=False):
-    threshold = np.max(data[1] / clip_th1)
-    threshold_2 = np.max(data[1] / clip_th2)
+def clip_waveform(data, clip_th1=0.2, clip_th2=1e-4, plot=False):
+    
+    h1 = np.abs(data[1])
+    h2 = np.abs(data[2])
 
-    start = min(
-        np.argmax(np.abs(data[1]) > threshold),
-        np.argmax(np.abs(data[2]) > threshold),
-    )
+    peak = max(h1.max(), h2.max())
+
+    start_th = clip_th1 * peak
+    end_th = clip_th2 * peak
+
+    # ---- find start ----
+    start_mask = (h1 > start_th) | (h2 > start_th)
+
+
+    if not np.any(start_mask):
+        raise ValueError("Start threshold never crossed")
+
+    start = np.argmax(start_mask)
 
     data = data[:, start:]
 
-    # --- find end (from the right) ---
-    n = data.shape[1]
+    # ---- find end ----
+    h1 = np.abs(data[1])
+    h2 = np.abs(data[2])
 
-    end = min(
-        n - np.argmax(np.abs(data[1][::-1]) > threshold_2),
-        n - np.argmax(np.abs(data[2][::-1]) > threshold_2),
-    )
+    end_mask = (h1 > end_th) | (h2 > end_th)
+    if not np.any(end_mask):
+        raise ValueError("End threshold never crossed")
+
+    end = np.where(end_mask)[0][-1] + 1
+
     data = data[:, :end]
 
     if plot:

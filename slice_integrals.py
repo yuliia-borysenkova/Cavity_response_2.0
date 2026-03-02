@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, json, socket, argparse
 from math import radians
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 from modes import RectangularMode, CylindricalMode, SphericalMode
 from rhs.slice_integration import SliceIntegration
@@ -64,7 +64,7 @@ def main():
     # Save run config
     run_info = {
         "args": vars(args),
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "hostname": socket.gethostname()
     }
     with open(os.path.join(save_dir, "run_config.json"), "w") as f:
