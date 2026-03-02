@@ -1,11 +1,14 @@
+"""
+Post-process cavity-GW coupling strength for spherical cavities with degenerate m modes (e.g. TM_m11 for m = -1, 0, 1).
+Combines multiple coupling strength files via quadrature sum and computes statistics.
+"""
+
 import argparse
 import glob
 import os
 import numpy as np
 
 from coupling.utils import mean_calc
-
-#In process
     
 def parse_args():
     parser = argparse.ArgumentParser(description="Compute cavity-GW coupling strength η(θ,φ) for various geometries and modes.")
