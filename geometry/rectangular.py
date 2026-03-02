@@ -1,7 +1,6 @@
 import numpy as np
 from .base import Cavity
 from scipy import integrate
-from geometry.geometry import RectangularGeometry
 
 class RectangularCavity(Cavity):
     def __init__(self, a, b, c, **params):
@@ -9,11 +8,18 @@ class RectangularCavity(Cavity):
         self.a = a
         self.b = b
         self.c = c
-        self._geometry = RectangularGeometry(a=self.a, b=self.b, c=self.c)
 
+    # ---------------- integration geometry ----------------
     @property
-    def geometry(self) -> RectangularGeometry:
-        return self._geometry
+    def bounds(self):
+        return [
+            (0.0, self.a),
+            (0.0, self.b),
+            (0.0, self.c),
+        ]
+
+    def jacobian(self, Y):
+        return 1.0
     
     # ---------------- coordinate conversion ----------------
     def cart_to_native(self, X):

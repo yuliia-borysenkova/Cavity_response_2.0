@@ -30,6 +30,22 @@ class Cavity(ABC):
         """Return the Cartesian center of the cavity."""
         pass
 
+    # ---------- integration geometry ----------
+    @property
+    @abstractmethod
+    def bounds(self):
+        """Return list of (min, max) for each integration variable."""
+        pass
+
+    def make_Y(self, *params):
+        """Convert integration variables to coordinates Y for E-field evaluation."""
+        return np.asarray(params, float)
+
+    @abstractmethod
+    def jacobian(self, Y):
+        """Return the Jacobian factor for integration at coordinates Y."""
+        pass
+
     # ---------- slicing ----------
     @abstractmethod
     def slice_limits(self, k: np.ndarray):
@@ -40,14 +56,10 @@ class Cavity(ABC):
     def slice_integral(self, x_par_vec, integrand, k, e1, e2):
         pass
 
-    def overlap_integral(self, E1, E2, *, method="nquad", complex_value=False, **opts):
-        return _overlap_integral(E1, E2, self.geometry, method=method, complex_value=complex_value, **opts)
+    # ---------- overlap integral ----------
 
-    @property
-    @abstractmethod
-    def geometry(self):
-        """Object providing bounds(), make_Y(*vars), jacobian(Y) for integration."""
-        pass
+    def overlap_integral(self, E1, E2, *, method="nquad", complex_value=False, **opts):
+        return _overlap_integral(E1, E2, self, method=method, complex_value=complex_value, **opts)
 
     # ---------- volume ----------
     @abstractmethod

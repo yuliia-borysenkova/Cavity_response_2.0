@@ -1,18 +1,25 @@
 import numpy as np
-from .base import Cavity
 from scipy import integrate
-from geometry.geometry import CylindricalGeometry
+from .base import Cavity
 
 class CylindricalCavity(Cavity):
-    def __init__(self, R, L, **params):
+    def __init__(self, R, L, rho_min=1e-30, **params):
         super().__init__(**params)
         self.R = R
         self.L = L
-        self._geometry = CylindricalGeometry(R=self.R, L=self.L)
+        self.rho_min = rho_min
 
+    # ---------------- integration geometry ----------------
     @property
-    def geometry(self) -> CylindricalGeometry:
-        return self._geometry
+    def bounds(self):
+        return [
+            (self.rho_min, self.R),
+            (0.0, 2 * np.pi),
+            (0.0, self.L),
+        ]
+
+    def jacobian(self, Y):
+        return Y[0]
 
     # ---------------- coordinate conversion ----------------
     def cart_to_native(self, X):
