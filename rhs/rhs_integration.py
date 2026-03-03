@@ -131,4 +131,3 @@ def compute_rhs_time_series(t_data, x_par_arr, E_plus, E_cross, hplus_dd, hcross
     print(f"[INFO] RHS integration complete.")
 
     return ts, RHS
-

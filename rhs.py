@@ -12,6 +12,7 @@ def parse_args():
     parser.add_argument("--data-dir", default="data")
     parser.add_argument("--results-dir", default="results")
     parser.add_argument("--Nt", type=int, default=1000)
+    parser.add_argument("--Ns", type=int, default=100)
     
     parser.add_argument("--NLGrid", action="store_true", help="Enable grid adaptation for VEGAS integration")
     parser.add_argument("--density-boost", type=float, default=5.0, help="Density boost factor for non-uniform time grid (if NLGrid is enabled)")
@@ -41,7 +42,7 @@ def main():
 
     data = os.path.join(args.data_dir, args.data + ".npy")
 
-    save_dir, area_data = load_slice_integrals(data, args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+    save_dir, area_data = load_slice_integrals(data, args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi, Ns=args.Ns)
     x_par_arr, E_plus, E_cross = area_data
     t_data, hplus_dd, hcross_dd = load_waveform(data, derivative=2)
 

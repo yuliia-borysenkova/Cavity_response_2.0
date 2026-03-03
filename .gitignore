@@ -1,0 +1,51 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+*.env
+
+# Configuration files
+*config.json
+*.json
+
+# OS / WSL / misc
+.DS_Store
+Thumbs.db
+
+# IDE / notebooks
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# Compiled C/C++ extensions
+*.so
+*.dll
+*.o
+*.a
+
+# Data & outputs
+# allow .npy files for simulation data
+*.npz
+*.csv
+*.dat
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.pdf
+!*.npy
+
+# Logs
+*.log
+*.out
+*.err
+
+#Directories to ignore
+results/

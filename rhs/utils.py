@@ -83,11 +83,11 @@ def load_slice_integrals(data, results_dir, cavity_type, mode_name, mode_ind, th
     save_dir = os.path.join(results_dir, dir1_name, dir2_name)
     os.makedirs(save_dir, exist_ok=True)
 
-    filename_plus = os.path.join(run_dir, "slice_integrals_plus.npz")
+    filename_plus = os.path.join(run_dir, f"slice_integrals_plus.npz")
     file_plus = np.load(filename_plus)
     area_integral_plus, x_par_vals = file_plus["area"], file_plus["x_par"]
 
-    filename_cross = os.path.join(run_dir, "slice_integrals_cross.npz")
+    filename_cross = os.path.join(run_dir, f"slice_integrals_cross.npz")
     file_cross = np.load(filename_cross)
     area_integral_cross, _ = file_cross["area"], file_cross["x_par"]
 
