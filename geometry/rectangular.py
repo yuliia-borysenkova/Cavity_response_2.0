@@ -53,19 +53,8 @@ class RectangularCavity(Cavity):
         x_par = [np.dot(k,v)-np.dot(k,p0) for v in vertices]
         return min(x_par), max(x_par)
 
-    def slice_integral(self, x_par_vec, integrand, k, e1, e2, epsabs=1e-8, epsrel=1e-4, limit=200):
-        lim = np.sqrt(self.a**2 + self.b**2 + self.c**2)/2
-
-        def wrapped(s,t):
-            X = x_par_vec + s*e1 + t*e2
-            x, y, z = X
-            if not self.inside(X):
-                return 0.0
-            return integrand(x, y, z)
-
-        opts = [{'limit':limit,'epsabs':epsabs,'epsrel':epsrel}]*2
-        result, _ = integrate.nquad(wrapped, [[-lim, lim], [-lim, lim]], opts=opts)
-        return result
+    def perp_lim(self):
+        return np.sqrt(self.a**2 + self.b**2 + self.c**2)/2
         
     # ---------------- volume ----------------
     def volume(self):

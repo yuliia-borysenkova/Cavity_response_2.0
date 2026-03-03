@@ -65,23 +65,8 @@ class SphericalCavity(Cavity):
         # For spheres, x_parallel runs from -R to +R along k
         return -self.R, self.R
 
-    def slice_integral(self, x_par_vec, integrand, k, e1, e2,
-                       epsabs=1e-8, epsrel=1e-4, limit=200):
-        lim = self.R
-
-        def wrapped(s, t):
-            X = x_par_vec + s*e1 + t*e2
-            
-            Y = self.cart_to_native(X)
-            r, theta, phi = Y
-            
-            if not self.inside(Y):
-                return 0.0
-            return integrand(r, theta, phi)
-
-        opts = [{'limit': limit, 'epsabs': epsabs, 'epsrel': epsrel}]*2
-        result, _ = integrate.nquad(wrapped, [[-lim, lim], [-lim, lim]], opts=opts)
-        return result
+    def perp_lim(self):
+        return self.R
 
     # ---------------- volume ----------------
     def volume(self):

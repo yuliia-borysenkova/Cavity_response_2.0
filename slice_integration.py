@@ -28,6 +28,7 @@ def parse_args():
     
     parser.add_argument("--Ns", type=int, default=100)
     parser.add_argument("--nproc", type=int, default=1)
+    parser.add_argument("--method", choices=["vegas", "nquad"], default="nquad")
     
     # Rectangular cavity
     parser.add_argument("--a", type=float, default=0.1)
@@ -94,7 +95,8 @@ def main():
         mode=mode,
         theta=theta_rad, phi=phi_rad,
         B=B, Ns=args.Ns,
-        nproc=args.nproc, save_dir=save_dir
+        nproc=args.nproc, method=args.method,
+        save_dir=save_dir
     )
     sim.run()
 

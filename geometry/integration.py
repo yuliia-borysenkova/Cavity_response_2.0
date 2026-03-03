@@ -59,3 +59,38 @@ def overlap_integral(E1, E2, geometry, *, method="nquad", complex_value=True, **
     if method not in _METHODS:
         raise ValueError(f"Unknown method '{method}'. Available: {list(_METHODS.keys())}")
     return _METHODS[method](E1, E2, geometry, complex_value=complex_value, **opts)
+
+def slice_integral(geometry, x_par_vec, integrand, k, e1, e2, method, epsabs=1e-8, epsrel=1e-4, limit=200,
+                                                               neval=10_000, nitn_warmup=5, nitn_main=10):
+
+    lim = geometry.perp_lim()
+    bounds = [(-lim, lim), (-lim, lim)]
+    
+    def wrapped(*args):
+        if len(args) == 1:
+            s, t = args[0]
+        elif len(args) == 2:
+            s, t = args
+    
+        X = x_par_vec + s*e1 + t*e2
+        Y = geometry.cart_to_native(X)
+        y1, y2, y3 = Y
+        if not geometry.inside(Y):
+            return 0.0
+        return integrand(y1, y2, y3)
+
+    if method == "nquad":
+        opts = [{'limit':limit,'epsabs':epsabs,'epsrel':epsrel}]*2
+        result, _ = integrate.nquad(wrapped, bounds, opts=opts)
+            
+    elif method == "vegas":
+        integ = vegas.Integrator(bounds)
+        integ(wrapped, nitn=nitn_warmup, neval=max(1, neval // 3))
+        integrated_value = integ(wrapped, nitn=nitn_main, neval=neval)
+
+        result = integrated_value.mean
+
+    else:
+        raise ValueError(f"Unknown method '{method}'. Available: {list(_METHODS.keys())}")
+        
+    return result
