@@ -53,217 +53,118 @@ and then
 
 ## Quickstart (minimal working example)
 
-# 1) Generate waveform
+- 1) Generate waveform
 python3 waveform.py --plot --clip
 
-# 2) Precompute slice integrals for a chosen mode/geometry/direction
+- 2) Precompute slice integrals for a chosen mode/geometry/direction
 python3 slice_integration.py --mode-fam TM --mode-par b --mode-ind 0,1,0
 
-# 3) Compute RHS using a chosen waveform file identifier in data/
+- 3) Compute RHS using a chosen waveform file identifier in data/
 python3 rhs.py --data GW_M=1.00e-06_q=1.00_20260226_142410 --mode-fam TM --mode-par b --mode-ind 0,1,0
 
-# 4) Solve the mode equation for c_n(t)
+- 4) Solve the mode equation for c_n(t)
 python3 ode.py --data GW_M=1.00e-06_q=1.00_20260226_142410 --mode-fam TM --mode-par b --mode-ind 0,1,0
 
 ---
+Script details
 
-## Script details
+------------------------------------------------------------------------
 
----
+waveform.py
 
-### waveform.py
+Uses PyCBC, PySEOBNR, and gwmemory to generate realistic PBH merger
+signals. Internally rescales total mass to 10 M_sun, generates waveform,
+then rescales back using Mf invariance.
 
-Uses PyCBC, PySEOBNR and gwmemory to generate realistic PBH merger signals.
-Internally rescales total mass to 10 M_sun, generates waveform, then rescales back using Mf invariance.
-
-Example:
-
-python3 waveform.py --plot --clip
+Example: python3 waveform.py –plot –clip
 
 Parameters:
 
-Binary system:
-- --m-absolute (default: 1e-6) — total mass M (M_sun)
-- --q (default: 1) — mass ratio
-- --spin-1 (default: 0,0,0) — spin vector of larger object
-- --spin-2 (default: 0,0,0) — spin vector of smaller object
-- --eccentricity (default: 0.0)
+–m-absolute (default: 1e-6) — Total mass M in M_sun –q (default: 1) —
+Mass ratio m1/m2 –spin-1 (default: 0,0,0) — Spin vector of larger object
+–spin-2 (default: 0,0,0) — Spin vector of smaller object –eccentricity
+(default: 0.0) — Orbital eccentricity –low_freq (default: 1e8) — Lower
+frequency bound (Hz) –high_freq (default: 1e11) — Upper frequency bound
+(Hz) –distance (default: 1e-11) — Distance to source (pc) –inclination
+(default: 0.0) — Inclination angle (rad) –polarization-angle (default:
+0.0) — Polarization angle (rad) –phi0 (default: 0.0) — Initial orbital
+phase –tc (default: 0.0) — Time of coalescence –approximant (default:
+IMRPhenomD) — Waveform model –clip (default: False) — Enable waveform
+clipping –clip-th1 (default: 0.2) — Primary clipping threshold –clip-th2
+(default: 1e-4) — Tail clipping threshold –memory (default: False) —
+Include GW memory –density-factor (default: 2.0) — Density scaling
+factor –plot (default: False) — Plot waveform –data-dir (default: data)
+— Output directory –output (auto) — Output filename
 
-Frequency range:
-- --low_freq (default: 1e8 Hz)
-- --high_freq (default: 1e11 Hz)
+------------------------------------------------------------------------
 
-Orientation:
-- --distance (default: 1e-11 pc)
-- --inclination (default: 0.0 rad)
-- --polarization-angle (default: 0.0 rad)
-- --phi0 (default: 0.0)
-- --tc (default: 0.0)
+slice_integration.py
 
-Model options:
-- --approximant (default: IMRPhenomD)
-- --clip (default: False)
-- --clip-th1 (default: 0.2)
-- --clip-th2 (default: 1e-4)
-- --memory (default: False)
+Computes transverse slice integrals A_plus(x_parallel) and
+A_cross(x_parallel) for a chosen cavity geometry, EM mode, and GW
+direction.
 
-Output:
-- --density-factor (default: 2.0)
-- --plot (default: False)
-- --data-dir (default: data)
-- --output (auto)
-
----
-
-### slice_integration.py
-
-Computes transverse slice integrals A_plus(x_parallel) and A_cross(x_parallel)
-for a chosen cavity geometry, EM mode and GW direction.
-
-Example:
-
-python3 slice_integration.py --mode-fam TM --mode-par b --mode-ind 0,1,0
+Example: python3 slice_integration.py –mode-fam TM –mode-par b –mode-ind
+0,1,0
 
 Parameters:
 
-Cavity and mode:
-- --geometry (default: cylindrical)
-- --mode-fam (required: TE or TM)
-- --mode-par (a, b or None)
-- --mode-ind (default: 0,1,0)
+–geometry (default: cylindrical) –mode-fam (required: TE or TM)
+–mode-par (a, b or None) –mode-ind (default: 0,1,0) –Bz (default: 14.0
+T) –Ns (default: 100) –nproc (default: 1) –theta (default: 45.0 deg)
+–phi (default: 0.0 deg) –R (default: 0.04 m) –L (default: 0.24 m) –a
+(default: 0.1 m) –b (default: 0.1 m) –c (default: 0.1 m) –results-dir
+(default: results)
 
-Simulation:
-- --Bz (default: 14.0 T)
-- --Ns (default: 100)
-- --nproc (default: 1)
+------------------------------------------------------------------------
 
-GW direction:
-- --theta (default: 45.0 deg)
-- --phi (default: 0.0 deg)
-
-Cylindrical / spherical:
-- --R (default: 0.04 m)
-- --L (default: 0.24 m)
-
-Rectangular:
-- --a (default: 0.1 m)
-- --b (default: 0.1 m)
-- --c (default: 0.1 m)
-
-Output:
-- --results-dir (default: results)
-
----
-
-### rhs.py
+rhs.py
 
 Computes the driving term I_n(t) from slice integrals and waveform data.
 
-Supports:
-- quad integration
-- vegas integration
-- hybrid adaptive grid (--NLGrid)
-
-Example:
-
-python3 rhs.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
+Example: python3 rhs.py –data GW_xxx –mode-fam TM –mode-par b –mode-ind
+0,1,0
 
 Parameters:
 
-Input/output:
-- --data (required)
-- --data-dir (default: data)
-- --results-dir (default: results)
+–data (required) –data-dir (default: data) –results-dir (default:
+results) –Nt (default: 1000) –NLGrid (default: False) –density-boost
+(default: 5.0) –method (default: quad; or vegas) –nproc (default: 1)
+–theta (default: 45.0 deg) –phi (default: 0.0 deg) –geometry (default:
+cylindrical) –mode-fam (required) –mode-par –mode-ind (default: 0,1,0)
+–L (default: 0.1 m)
 
-Time sampling:
-- --Nt (default: 1000)
-- --NLGrid (default: False)
-- --density-boost (default: 5.0)
+------------------------------------------------------------------------
 
-Integration:
-- --method (quad or vegas, default: quad)
-- --nproc (default: 1)
+ode.py
 
-GW direction:
-- --theta (default: 45.0 deg)
-- --phi (default: 0.0 deg)
+Solves: c’’ + (omega_n / Q) c’ + omega_n^2 c = -I_n(t)
 
-Cavity:
-- --geometry (default: cylindrical)
-- --mode-fam (required)
-- --mode-par
-- --mode-ind (default: 0,1,0)
-- --L (default: 0.1 m)
-
----
-
-### ode.py
-
-Solves:
-
-c'' + (omega_n / Q) c' + omega_n^2 c = -I_n(t)
-
-Uses SciPy solve_ivp (Radau method).
-
-Example:
-
-python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
+Example: python3 ode.py –data GW_xxx –mode-fam TM –mode-par b –mode-ind
+0,1,0
 
 Parameters:
 
-Input/output:
-- --results-dir (default: results)
-- --data (required)
+–results-dir (default: results) –data (required) –theta (default: 45.0
+deg) –phi (default: 0.0 deg) –Q (default: 1e5) –geometry (default:
+cylindrical) –mode-fam (default: TM) –mode-par –mode-ind (default:
+0,1,0)
 
-GW direction:
-- --theta (default: 45.0 deg)
-- --phi (default: 0.0 deg)
+------------------------------------------------------------------------
 
-Cavity:
-- --Q (default: 1e5)
-- --geometry (default: cylindrical)
-- --mode-fam (default: TM)
-- --mode-par
-- --mode-ind (default: 0,1,0)
+coupling_strength.py
 
----
+Computes direction-dependent coupling C_gw(theta, phi).
 
-### coupling_strength.py
-
-Computes direction-dependent coupling:
-
-C_gw(theta, phi)
-
-Useful for inspiral optimisation and cavity design studies.
-
-Example:
-
-python3 coupling_strength.py --R 0.3 --L 0.2 --pol cross --mode-fam TM --mode-ind 0,1,0 --N-theta 50
+Example: python3 coupling_strength.py –R 0.3 –L 0.2 –pol cross –mode-fam
+TM –mode-ind 0,1,0 –N-theta 50
 
 Parameters:
 
-Cavity:
-- --geometry (default: cylindrical)
-- --mode-fam (default: TM)
-- --mode-ind (default: 0,1,0)
-
-Cylindrical / spherical:
-- --R
-- --L
-
-Rectangular:
-- --a
-- --b
-- --c
-
-Simulation:
-- --pol (cross or plus, default: cross)
-- --N-theta (default: 10)
-- --N-phi (default: 1)
-- --nproc (default: 1)
-
-Output:
-- --save-dir (default: results/coupling)
+–geometry (default: cylindrical) –mode-fam (default: TM) –mode-ind
+(default: 0,1,0) –R –L –a –b –c –pol (default: cross; or plus) –N-theta
+(default: 10) –N-phi (default: 1) –nproc (default: 1) –save-dir
+(default: results/coupling)
 
 ---
 
