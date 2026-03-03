@@ -40,42 +40,33 @@ The code is split into 5 main scripts:
 
 1. **`waveform.py`**  
    Generates PBH merger waveforms (saved as `.npy` under `data/`).
+   ```bash
+   python3 waveform.py --plot --clip
+   ```
 
-2. **`slice_integration.py`**  
+3. **`slice_integration.py`**  
    Computes the transverse slice integrals that couple to `+` and `×` GW polarisations for a chosen cavity geometry/mode and GW direction.
+   ```bash
+   python3 slice_integration.py --mode-fam TM --mode-par b --mode-ind 0,1,0
+   ```
 
-3. **`rhs.py`**  
+5. **`rhs.py`**  
    Builds the driving term (RHS) as a function of time using the slice integrals and a chosen waveform file in `data/`.
+   ```bash
+   python3 rhs.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
+   ```
 
-4. **`ode.py`**  
+7. **`ode.py`**  
    Solves the driven damped oscillator equation for the mode amplitude `c_n(t)` using an RHS file and a chosen cavity quality factor `Q`.
+   ```bash
+   python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
+   ```
 
-5. **`coupling_strength.py`**  
+8. **`coupling_strength.py`**  
    Computes coupling coefficients to cavity modes as functions of GW direction (useful for early inspiral/monochromatic signals). Can be used independently.
-
----
-
-## Quick start
-
-1) Generate a waveform
-```bash
-python3 waveform.py --plot --clip
-```
-
-3) Precompute slice integrals for a chosen mode/geometry/direction
-```bash
-python3 slice_integration.py --mode-fam TM --mode-par b --mode-ind 0,1,0
-```
-
-4) Compute RHS using a chosen waveform file identifier
-```bash
-python3 rhs.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
-```
-
-5) Solve the mode equation for c_n(t)
-```bash
-python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
-```
+   ```bash
+   python3 coupling_strength.py --R 0.3 --L 0.2 --pol cross --mode-fam TM --mode-ind 0,1,0 --N-theta 50
+   ```
 
 ------------------------------------------------------------------------
 # Script Details
