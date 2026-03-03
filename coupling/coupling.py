@@ -43,12 +43,12 @@ class CouplingStrength:
         mode_numbers = ''.join(map(str, self.mode.indices))
         desc = f"[INFO] Computing coupling for mode {self.mode.mode_name}_{mode_numbers} with {self.pol} polarization"
 
-        coupling_args = [(self.cavity, self.mode, self.B, self.pol, self.omega, k, e1, e2, t)
+        args = [(self.cavity, self.mode, self.B, self.pol, self.omega, k, e1, e2, t)
             for (k, e1, e2) in directions]
 
         with Pool(processes=self.nproc) as pool:
-            it = pool.imap(compute_coupling, coupling_args)
-            eta_k = list(tqdm(it, total=len(coupling_args), desc=desc, unit="k"))
+            it = pool.imap(compute_coupling, args)
+            eta_k = list(tqdm(it, total=len(args), desc=desc, unit="k"))
 
         eta_k = np.array(eta_k)
         eta_reshaped = eta_k.reshape(len(self.phi_vals), len(self.theta_vals))
