@@ -49,3 +49,7 @@ Thumbs.db
 
 #Directories to ignore
 results/
+
+# allow repository logos
+!logos/
+!logos/**
