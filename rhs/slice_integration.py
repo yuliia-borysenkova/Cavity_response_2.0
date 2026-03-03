@@ -2,12 +2,13 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from geometry.integration import slice_integral
 from rhs.utils import decompose_B, save_plot, compute_k_pol
 from functools import partial
 from multiprocessing import Pool
 from tqdm import tqdm
 
-def compute_area_integral(cavity, mode, Bvec, x_vec, k, e1, e2):
+def compute_area_integral(cavity, mode, Bvec, x_vec, k, e1, e2, method="nquad"):
     """
     Compute area integral at a single parallel position.
     """
@@ -19,10 +20,10 @@ def compute_area_integral(cavity, mode, Bvec, x_vec, k, e1, e2):
 
         return np.vdot(mode.E(Y), B_native)
 
-    return cavity.slice_integral(x_vec, integrand, k, e1, e2)
+    return slice_integral(cavity, x_vec, integrand, k, e1, e2, method)
 
 # Move to slice_integration
-def compute_slice_integrals(cavity, mode, Bvec, k, e1, e2, Ns=100, nproc=1):
+def compute_slice_integrals(cavity, mode, Bvec, k, e1, e2, Ns=100, nproc=1, method="nquad"):
     """
     Compute slice integrals over all parallel positions in a cavity.
     Returns: x_par_vals, area_vals
@@ -40,7 +41,7 @@ def compute_slice_integrals(cavity, mode, Bvec, k, e1, e2, Ns=100, nproc=1):
     x_par_vecs = np.array([x0 + x*k for x in x_par_vals])
 
     # Plane vectors
-    func = partial(compute_area_integral, cavity, mode, Bvec, k=k, e1=e1, e2=e2)
+    func = partial(compute_area_integral, cavity, mode, Bvec, k=k, e1=e1, e2=e2, method=method)
     
     with Pool(nproc) as pool:
         area_vals = list(tqdm(pool.imap(func, x_par_vecs), total=len(x_par_vecs)))
@@ -52,7 +53,7 @@ class SliceIntegration:
     Handles slice integrals of cavity modes for plus and cross polarizations.
     Works with any geometry and mode subclass.
     """
-    def __init__(self, cavity, mode, theta, phi, B, Ns=100, nproc=1, save_dir="results"):
+    def __init__(self, cavity, mode, theta, phi, B, Ns=100, nproc=1, method="nquad", save_dir="results"):
         self.cavity = cavity
         self.mode = mode
         self.theta = theta
@@ -60,6 +61,7 @@ class SliceIntegration:
         self.B = B
         self.Ns = Ns
         self.nproc = nproc
+        self.method = method
         self.save_dir = save_dir
         os.makedirs(self.save_dir, exist_ok=True)
 
@@ -76,7 +78,7 @@ class SliceIntegration:
             print(f"[INFO] Computing {pol} polarization integrals...")
             x_par_vals, area_vals = compute_slice_integrals(
                 self.cavity, self.mode, Bvec, self.k, self.e1, self.e2,
-                Ns=self.Ns, nproc=self.nproc
+                Ns=self.Ns, nproc=self.nproc, method=self.method,
             )
             print("[INFO] Slice integration complete.")
 
