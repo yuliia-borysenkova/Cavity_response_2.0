@@ -47,9 +47,10 @@ class Cavity(ABC):
     def slice_limits(self, k: np.ndarray):
         """Return (x_par_min, x_par_max)."""
         pass
-
+        
     @abstractmethod
-    def slice_integral(self, x_par_vec, integrand, k, e1, e2):
+    def perp_lim(self):
+        """Return x_perp_lim,."""
         pass
 
     # ---------- overlap integral ----------

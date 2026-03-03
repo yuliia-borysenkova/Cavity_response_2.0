@@ -64,25 +64,9 @@ class CylindricalCavity(Cavity):
         points = np.column_stack([X.ravel(), Y.ravel(), Z.ravel()])
         x_par = [np.dot(k, p) - k[2]*self.L/2 for p in points]
         return min(x_par), max(x_par)
-
-    def slice_integral(self, x_par_vec, integrand, k, e1, e2,
-                       epsabs=1e-8, epsrel=1e-4, limit=200):
-        lim = np.sqrt(self.L**2 + 4*self.R**2)/2
-
-        def wrapped(s, t):
-            X = x_par_vec + s*e1 + t*e2
-            
-            Y = self.cart_to_native(X)
-            rho, phi, z = Y
-
-            if not self.inside(Y):
-                return 0.0
-            return integrand(rho, phi, z)
- 
-        opts = [{'limit': limit, 'epsabs': epsabs, 'epsrel': epsrel}]*2
-
-        result, _ = integrate.nquad(wrapped, [[-lim, lim], [-lim, lim]], opts=opts)
-        return result
+    
+    def perp_lim(self):
+        return np.sqrt(self.L**2 + 4*self.R**2)/2
 
     # ---------------- volume ----------------
     def volume(self):
