@@ -58,16 +58,24 @@ The code is split into 5 main scripts:
 ## Quick start
 
 1) Generate a waveform
+```bash
 python3 waveform.py --plot --clip
+```
 
-2) Precompute slice integrals for a chosen mode/geometry/direction
+3) Precompute slice integrals for a chosen mode/geometry/direction
+```bash
 python3 slice_integration.py --mode-fam TM --mode-par b --mode-ind 0,1,0
+```
 
-3) Compute RHS using a chosen waveform file identifier
+4) Compute RHS using a chosen waveform file identifier
+```bash
 python3 rhs.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
+```
 
-4) Solve the mode equation for c_n(t)
+5) Solve the mode equation for c_n(t)
+```bash
 python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
+```
 
 ------------------------------------------------------------------------
 # Script Details
