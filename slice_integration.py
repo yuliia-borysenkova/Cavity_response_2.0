@@ -49,8 +49,8 @@ def parse_args():
 def main():
     args = parse_args()
 
-    theta_rad = radians(args.theta)
-    phi_rad = radians(args.phi)
+    theta_rad = np.radians(args.theta)
+    phi_rad = np.radians(args.phi)
     
     if args.mode_par is not None:
         mode_name = args.mode_fam + args.mode_par

@@ -37,10 +37,6 @@ class Cavity(ABC):
         """Return list of (min, max) for each integration variable."""
         pass
 
-    def make_Y(self, *params):
-        """Convert integration variables to coordinates Y for E-field evaluation."""
-        return np.asarray(params, float)
-
     @abstractmethod
     def jacobian(self, Y):
         """Return the Jacobian factor for integration at coordinates Y."""
