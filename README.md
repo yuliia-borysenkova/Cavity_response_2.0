@@ -1,4 +1,4 @@
-![CHASM_logo](logos/chasm_logo_2.png)
+![CHASM_logo](logos/chasm_logo.png)
 
 # CHASM --- Cavity Response Simulator 2.0
 
