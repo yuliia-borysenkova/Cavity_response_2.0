@@ -194,8 +194,11 @@ Computes direction-dependent coupling C_gw(θ, φ).
 ------------------------------------------------------------------------
 
 # The library installation procedure
+### Using pyenv
 
-pyenv install 3.10.0 <br>
-pyenv virtualenv 3.10.0 cavity-response <br>
-pyenv activate cavity-response <br>
-pip3 install -r requirements.txt
+```bash
+pyenv install 3.10.0
+pyenv virtualenv 3.10.0 cavity-response
+pyenv activate cavity-response
+pip install -r requirements.txt
+```
