@@ -1,3 +1,5 @@
+![CHASM_logo](chasm_logo.jpg)
+
 # CHASM --- Cavity Response Simulator 2.0
 
 **CHASM** (Cavity Response to High-frequency gravitational waves from Astrophysical Source Mergers)\
