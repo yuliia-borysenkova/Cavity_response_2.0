@@ -7,19 +7,19 @@ from scipy.constants import c as c_cnst
 
 def compute_k_pol(theta, phi):
 
-    k = np.array([np.sin(theta)*np.cos(phi), 
+    k = -np.array([np.sin(theta)*np.cos(phi), 
                   np.sin(theta)*np.sin(phi), 
                   np.cos(theta)
                  ])
 
-    e1 = np.array([np.cos(theta)*np.cos(phi), 
-                   np.cos(theta)*np.sin(phi), 
-                   -np.sin(theta)
-                 ])
-
-    e2 = np.array([-np.sin(phi), 
+    e1 = np.array([-np.sin(phi), 
                    np.cos(phi), 
                    0.0
+                 ])
+
+    e2 = np.array([np.cos(theta)*np.cos(phi), 
+                   np.cos(theta)*np.sin(phi), 
+                   -np.sin(theta)
                  ])
 
     return k, e1, e2
