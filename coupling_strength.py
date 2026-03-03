@@ -35,7 +35,7 @@ def parse_args():
     # Simulation parameters
     parser.add_argument("--pol", choices=["plus", "cross"], default="cross", help="GW polarization: 'plus' or 'cross'")
     parser.add_argument("--N-theta", type=int, default=10, help="Number of theta angles to sample")
-    parser.add_argument("--N-phi", type=int, default=0, help="Number of phi angles to sample")
+    parser.add_argument("--N-phi", type=int, default=1, help="Number of phi angles to sample")
     parser.add_argument("--nproc", type=int, default=1)
     
     # Results directory
@@ -74,7 +74,7 @@ def main():
         mode.normalize()
 
         res = CouplingStrength(cavity=cavity, mode=mode, theta_vals=theta_vals, phi_vals=phi_vals, pol=args.pol, nproc=args.nproc)
-        result.append(res.compute_coupling(t=0.0))
+        result.append(res.run())
 
     eta_a = result[0]
     eta_b = result[1] if len(result) > 1 else 0.0
