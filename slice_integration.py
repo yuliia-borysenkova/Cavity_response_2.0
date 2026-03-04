@@ -62,15 +62,6 @@ def main():
     save_dir = os.path.join(args.results_dir, dir_name)
     os.makedirs(save_dir, exist_ok=True)
 
-    # Save run config
-    run_info = {
-        "args": vars(args),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "hostname": socket.gethostname()
-    }
-    with open(os.path.join(save_dir, "run_config.json"), "w") as f:
-        json.dump(run_info, f, indent=2)
-
     # --- Parse mode indices and GW vector ---
     mode_ind = [int(x) for x in args.mode_ind.split(",")]
     B = np.array([0, 0, args.Bz])
@@ -88,6 +79,16 @@ def main():
 
     mode = mode_class(indices=mode_ind, mode_name=mode_name, cavity=cavity)
     mode.normalize()
+
+        # Save run config
+    run_info = {
+        "args": vars(args),
+        "omega": mode.omega(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "hostname": socket.gethostname()
+    }
+    with open(os.path.join(save_dir, "run_config.json"), "w") as f:
+        json.dump(run_info, f, indent=2)
 
     # --- Run slice simulation ---
     sim = SliceIntegration(

@@ -2,7 +2,7 @@ import os
 import argparse
 import matplotlib.pyplot as plt
 from ode.solver import solve_mode_amplitude
-from ode.utils import build_mode_from_config, load_rhs, save_amplitude, load_run_config
+from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, load_omega_from_config
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -16,8 +16,9 @@ def parse_args():
     parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical")
     parser.add_argument("--mode-fam", choices=["TM", "TM"])
     parser.add_argument("--mode-par", choices=["a", "b", None], help="Cavity mode to excite")
-    
     parser.add_argument("--mode-ind", type=str, default="0,1,0", help="Mode indices [n,p,q] as comma-separated values")
+
+    parser.add_argument("--extend", type=float, default=1.0, help="Extend the computation time to x the signal time")
     return parser.parse_args()
 
 def main():
@@ -36,10 +37,12 @@ def main():
     rhs_filename = f"RHS_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.npz"
     rhs_path = os.path.join(save_dir, rhs_filename)
 
-    cfg = load_run_config(run_dir)
-    omega = build_mode_from_config(cfg)
+    omega = load_omega_from_config(run_dir)
 
     ts, RHS, RHS_fn = load_rhs(rhs_path)
+    
+    if args.extend != 1.0:
+        ts, RHS, RHS_fn = extend_rhs(ts, RHS, args.extend)
 
     print("[INFO] Solving the ODE with a given RHS(t)...")
 
@@ -48,7 +51,16 @@ def main():
         omega=omega, Q=args.Q,
     )
     print("[INFO] ODE solved.")
+    
+    print("[INFO] Computing magnetic mode coefficients...")
 
+    c_t = result['c']
+    b_t = compute_b(ts, c_t, omega)
+    print("[INFO] Magnetic mode coefficients computed.")
+    E = 1/2 * (c_t**2 + b_t**2)
+
+    result['b'] = b_t
+    result['E'] = E
     save_amplitude(save_dir, result)
 
     # --- Plot: Mode amplitude ---
@@ -60,7 +72,24 @@ def main():
     ax.grid(True)
     ax.legend()
     fig.savefig(os.path.join(save_dir, f"Mode_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"), dpi=200)
-    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(ts * 1e9, b_t, label="Mode amplitude b(t)")
+    ax.set_xlabel("t [ns]")
+    ax.set_ylabel("Mode amplitude b(t)")
+    ax.set_title(f"b(t) for {args.geometry} cavity mode {mode_name} {args.mode_ind} and waveform file: {args.data}")
+    ax.grid(True)
+    ax.legend()
+    fig.savefig(os.path.join(save_dir, f"Mode_b_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"), dpi=200)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(ts * 1e9, E, label="Energy E(t)")
+    ax.set_xlabel("t [ns]")
+    ax.set_ylabel("Energy E [whatever units]")
+    ax.set_title(f"E(t) for {args.geometry} cavity mode {mode_name} {args.mode_ind} and waveform file: {args.data}")
+    ax.grid(True)
+    ax.legend()
+    fig.savefig(os.path.join(save_dir, f"Energy_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"), dpi=200)
 
 if __name__ == "__main__":
     main()

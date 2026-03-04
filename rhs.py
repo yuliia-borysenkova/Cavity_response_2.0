@@ -42,7 +42,7 @@ def main():
 
     data = os.path.join(args.data_dir, args.data + ".npy")
 
-    save_dir, area_data = load_slice_integrals(data, args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi, Ns=args.Ns)
+    save_dir, area_data = load_slice_integrals(data, args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi, args.Ns)
     x_par_arr, E_plus, E_cross = area_data
     t_data, hplus_dd, hcross_dd = load_waveform(data, derivative=2)
 
