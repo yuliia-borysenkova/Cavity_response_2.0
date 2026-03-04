@@ -1,34 +1,9 @@
-import os, json
+import os, json, math
 import numpy as np
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 from modes import CylindricalMode, SphericalMode, RectangularMode
 from scipy import interpolate
 
-def build_mode_from_config(cfg):
-    args = cfg["args"]
-    cavity_type = args["geometry"]
-
-    if cavity_type == "rectangular":
-        cavity = RectangularCavity(a=args["a"], b=args["b"], c=args["c"])
-        mode_class = RectangularMode
-    elif cavity_type == "cylindrical":
-        cavity = CylindricalCavity(R=args["R"], L=args["L"])
-        mode_class = CylindricalMode
-    elif cavity_type ==  "spherical":
-        cavity = SphericalCavity(R=args["R"])
-        mode_class = SphericalMode
-
-    indices = tuple(int(x) for x in args["mode_ind"].split(","))
-
-    if args["mode_par"] is not None:
-        mode_name = args["mode_fam"] + args["mode_par"]
-    else:
-        mode_name = args["mode_fam"]
-    
-    mode = mode_class(indices=indices, mode_name=mode_name, cavity=cavity)
-    omega = mode.omega()
-
-    return omega
 
 def load_rhs(rhs_path):
     
@@ -52,12 +27,61 @@ def save_amplitude(save_dir, result):
     print("[INFO] Saving ODE solution to ", path)
     return path
 
-def load_run_config(run_dir):
+def load_omega_from_config(run_dir):
     """Load run_config.json from the specified directory."""
     cfg_path = os.path.join(run_dir, "run_config.json")
     if not os.path.isfile(cfg_path):
         raise FileNotFoundError(f"run_config.json not found in {run_dir}")
     with open(cfg_path, "r") as f:
         cfg = json.load(f)
-    return cfg
+    omega = cfg['omega']
+    return omega
+    
+def extend_rhs(time, RHS, factor):
+    if factor <= 0:
+        raise ValueError("factor must be > 0")
+
+    if len(time) != len(RHS):
+        raise ValueError("time and RHS must have the same length")
+
+    dt = abs(time[-2] - time[-1])
+    n_original = len(time)
+
+    # Ensure integer length regardless of fractional factor
+    n_new = int(math.ceil(n_original * factor))
+
+    new_time = time[0] + dt * np.arange(n_new)
+    new_RHS = np.zeros(n_new, dtype=RHS.dtype)
+    new_RHS[:n_original] = RHS
+
+    new_RHS_fn = interpolate.interp1d(
+        new_time, new_RHS, kind="linear",
+        bounds_error=False, fill_value=0.0
+    )
+
+    return new_time, new_RHS, new_RHS_fn
+
+def compute_b(time, c, omega):
+
+    if time.ndim != 1 or c.ndim != 1:
+        raise ValueError("time and c must be 1D arrays")
+
+    if len(time) != len(c):
+        raise ValueError("time and c must have the same length")
+
+    if len(time) < 2:
+        raise ValueError("time array must contain at least two points")
+
+    # Ensure uniform time spacing
+    dt = time[1] - time[0]
+    if not np.allclose(np.diff(time), dt):
+        raise ValueError("time array must be uniformly spaced")
+
+    # Cumulative trapezoidal integration
+    integral = np.zeros_like(c, dtype=float)
+    integral[1:] = np.cumsum(0.5 * (c[1:] + c[:-1]) * dt)
+
+    integral -= integral.mean()
+
+    return -omega * integral
 

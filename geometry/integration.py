@@ -5,7 +5,7 @@ import scipy.integrate as integrate
 def overlap_nquad(E1, E2, geometry, *, epsabs=1e-8, epsrel=1e-6, limit=80, complex_value=True):
 
     def vdot_times_jac(*vars_):
-        Y = geometry.make_Y(*vars_)
+        Y = np.asarray(vars_, float)
         return geometry.jacobian(Y) * np.vdot(E1(Y), E2(Y))
 
     opts = [{'limit': limit, 'epsabs': epsabs, 'epsrel': epsrel}] * len(geometry.bounds)
@@ -29,7 +29,7 @@ def overlap_vegas(E1, E2, geometry, *, neval=10_000, nitn_warmup=5, nitn_main=10
     integ = vegas.Integrator(geometry.bounds)
 
     def integrand_real(x):
-        Y = geometry.make_Y(*x)
+        Y = np.asarray(x, float)
         val = geometry.jacobian(Y) * np.vdot(E1(Y), E2(Y))
         return val.real
 
@@ -39,7 +39,7 @@ def overlap_vegas(E1, E2, geometry, *, neval=10_000, nitn_warmup=5, nitn_main=10
         return float(res_re.mean)
 
     def integrand_imag(x):
-        Y = geometry.make_Y(*x)
+        Y = np.asarray(x, float)
         val = geometry.jacobian(Y) * np.vdot(E1(Y), E2(Y))
         return val.imag
 

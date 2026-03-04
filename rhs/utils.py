@@ -70,7 +70,7 @@ def parse_vector(s):
     vec = np.array([float(x) for x in s.split(",")])
     return vec / np.linalg.norm(vec)
 
-def load_slice_integrals(data, results_dir, cavity_type, mode_name, mode_ind, theta, phi):
+def load_slice_integrals(data, results_dir, cavity_type, mode_name, mode_ind, theta, phi, Ns):
     
     data_name = os.path.splitext(os.path.basename(data))[0]
 
