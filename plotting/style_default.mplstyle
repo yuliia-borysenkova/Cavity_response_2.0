@@ -1,0 +1,23 @@
+figure.figsize: 10, 5
+figure.dpi: 120
+savefig.dpi: 200
+savefig.bbox: tight
+
+axes.grid: True
+grid.alpha: 0.3
+axes.titlesize: 14
+axes.labelsize: 12
+
+legend.frameon: False
+legend.fontsize: 10
+
+lines.linewidth: 2.0
+lines.markersize: 6
+
+xtick.labelsize: 10
+ytick.labelsize: 10
+
+font.size: 11
+
+
+

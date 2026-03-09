@@ -1,12 +1,12 @@
 # simulation.py
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 from geometry.integration import slice_integral
 from rhs.utils import decompose_B, save_plot, compute_k_pol
 from functools import partial
 from multiprocessing import Pool
 from tqdm import tqdm
+from plotting import new_figure, save_figure
 
 def compute_area_integral(cavity, mode, Bvec, x_vec, k, e1, e2, method="nquad"):
     """
@@ -83,13 +83,12 @@ class SliceIntegration:
             print("[INFO] Slice integration complete.")
 
             # Plot
-            plt.figure(figsize=(10,5))
-            plt.plot(x_par_vals, area_vals)
-            plt.xlabel("X parallel [m]")
-            plt.ylabel(f"E · B_{pol}")
-            plt.title(f"Cavity mode {self.mode.mode_name} {self.mode.indices}")
-            plt.grid(True, alpha=0.3)
-            save_plot(self.save_dir, f"slice_integrals_{pol}.png")
+            fig, ax = new_figure()
+            ax.plot(x_par_vals, area_vals)
+            ax.set_xlabel(r"$x_{\parallel}\,[\mathrm{m}]$")
+            ax.set_ylabel(r"$\mathbf{E}\cdot\mathbf{B}_{\times}$")
+            ax.set_title(f"Cavity mode: {self.mode.mode_name} {self.mode.indices}")
+            save_figure(fig, os.path.join(self.save_dir, f"slice_integrals_{pol}.png"))
 
             # Save data
             file_name = os.path.join(self.save_dir, f"slice_integrals_{pol}.npz")
