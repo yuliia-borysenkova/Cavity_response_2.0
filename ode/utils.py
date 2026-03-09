@@ -3,6 +3,7 @@ import numpy as np
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 from modes import CylindricalMode, SphericalMode, RectangularMode
 from scipy import interpolate
+from scipy.integrate import cumulative_simpson
 
 
 def load_rhs(rhs_path):
@@ -27,7 +28,7 @@ def save_amplitude(save_dir, result):
     print("[INFO] Saving ODE solution to ", path)
     return path
 
-def load_omega_from_config(run_dir):
+def load_from_config(run_dir):
     """Load run_config.json from the specified directory."""
     cfg_path = os.path.join(run_dir, "run_config.json")
     if not os.path.isfile(cfg_path):
@@ -35,7 +36,8 @@ def load_omega_from_config(run_dir):
     with open(cfg_path, "r") as f:
         cfg = json.load(f)
     omega = cfg['omega']
-    return omega
+    norm = cfg['norm']
+    return omega, norm
     
 def extend_rhs(time, RHS, factor):
     if factor <= 0:
@@ -61,6 +63,18 @@ def extend_rhs(time, RHS, factor):
 
     return new_time, new_RHS, new_RHS_fn
 
+def start_at_zero_crossing(time, RHS):
+
+    # Find indices where sign changes
+    crossings = []
+    #crossings = np.where(np.sign(RHS[:-1]) != np.sign(RHS[1:]))[0]
+
+    if len(crossings) == 0:
+        return time, RHS  # no crossing found
+
+    start_idx = crossings[1] + 1
+    return time [start_idx:], RHS[start_idx:]
+
 def compute_b(time, c, omega):
 
     if time.ndim != 1 or c.ndim != 1:
@@ -79,9 +93,38 @@ def compute_b(time, c, omega):
 
     # Cumulative trapezoidal integration
     integral = np.zeros_like(c, dtype=float)
-    integral[1:] = np.cumsum(0.5 * (c[1:] + c[:-1]) * dt)
+    # integral[1:] = np.cumsum(0.5 * (c[1:] + c[:-1]) * dt)
+    integral = cumulative_simpson(c, x=time, initial=0)
 
-    integral -= integral.mean()
+    b = -omega * integral
 
-    return -omega * integral
+    # # ---- Find first local extrema ----
+    # db = np.diff(b)
+    # sign = np.sign(db)
+    # sign_change = np.diff(sign)
+
+    # # local maxima where sign goes + -> -
+    # maxima = np.where(sign_change < 0)[0] + 1
+
+    # # local minima where sign goes - -> +
+    # minima = np.where(sign_change > 0)[0] + 1
+
+    # if len(maxima) == 0 or len(minima) == 0:
+    #     raise ValueError("Could not detect oscillation extrema")
+
+    # first_max = maxima[1]
+    # first_min = minima[minima > first_max]
+
+    # if len(first_min) == 0:
+    #     # If minimum comes first instead
+    #     first_min = minima[1]
+    #     first_max = maxima[maxima > first_min][0]
+    # else:
+    #     first_min = first_min[0]
+
+    # shift = 0.5 * (b[first_max] + b[first_min])
+
+    # print(shift, b.mean())
+
+    return b - b.mean()
 

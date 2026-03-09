@@ -2,7 +2,8 @@ import os
 import argparse
 import matplotlib.pyplot as plt
 from ode.solver import solve_mode_amplitude
-from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, load_omega_from_config
+from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, load_from_config, start_at_zero_crossing
+from scipy.constants import epsilon_0
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -37,15 +38,16 @@ def main():
     rhs_filename = f"RHS_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.npz"
     rhs_path = os.path.join(save_dir, rhs_filename)
 
-    omega = load_omega_from_config(run_dir)
+    omega, norm = load_from_config(run_dir)
 
     ts, RHS, RHS_fn = load_rhs(rhs_path)
+
+    ts, RHS = start_at_zero_crossing(ts, RHS)
     
     if args.extend != 1.0:
         ts, RHS, RHS_fn = extend_rhs(ts, RHS, args.extend)
 
     print("[INFO] Solving the ODE with a given RHS(t)...")
-
     result = solve_mode_amplitude(
         ts=ts, RHS_fn=RHS_fn,
         omega=omega, Q=args.Q,
@@ -53,11 +55,11 @@ def main():
     print("[INFO] ODE solved.")
     
     print("[INFO] Computing magnetic mode coefficients...")
-
     c_t = result['c']
     b_t = compute_b(ts, c_t, omega)
     print("[INFO] Magnetic mode coefficients computed.")
-    E = 1/2 * (c_t**2 + b_t**2)
+    
+    E = 1/2 * epsilon_0 * norm**2 * (c_t**2 + b_t**2)
 
     result['b'] = b_t
     result['E'] = E
@@ -85,7 +87,7 @@ def main():
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(ts * 1e9, E, label="Energy E(t)")
     ax.set_xlabel("t [ns]")
-    ax.set_ylabel("Energy E [whatever units]")
+    ax.set_ylabel("Energy U [J]")
     ax.set_title(f"E(t) for {args.geometry} cavity mode {mode_name} {args.mode_ind} and waveform file: {args.data}")
     ax.grid(True)
     ax.legend()

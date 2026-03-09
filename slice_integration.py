@@ -84,6 +84,7 @@ def main():
     run_info = {
         "args": vars(args),
         "omega": mode.omega(),
+        "norm": mode.norm,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "hostname": socket.gethostname()
     }
