@@ -1,14 +1,15 @@
 from scipy.integrate import solve_ivp
+from scipy.constants import c as c_cnst
 
 def driven_mode_rhs(t, y, omega, Q, RHS_fn):
     u, uD = y
     rhs_val = RHS_fn(t)
     return [
         uD,
-        -omega / Q * uD - omega**2 * u - omega**2 * rhs_val
+        -omega / Q * uD - omega**2 * u - omega * c_cnst * rhs_val
     ]
 
-def solve_mode_amplitude(ts, RHS_fn, omega, Q, y0=(0.0, 0.0), method="Radau", rtol=1e-8, atol=1e-15):
+def solve_mode_amplitude(ts, RHS_fn, omega, Q, y0=(0.0, 0.0), method="Radau", rtol=1e-9, atol=1e-16):
 
     sol = solve_ivp(
         lambda t, y: driven_mode_rhs(t, y, omega, Q, RHS_fn),
@@ -27,6 +28,6 @@ def solve_mode_amplitude(ts, RHS_fn, omega, Q, y0=(0.0, 0.0), method="Radau", rt
         "t": ts,
         "u": u,
         "uD": uD,
-        "c": u / omega**2,  # Convert back to physical amplitude c(t)
-        "cD": uD / omega**2,
+        "c": u / omega,  # Convert back to physical amplitude c(t)
+        "cD": uD / omega,
     }
