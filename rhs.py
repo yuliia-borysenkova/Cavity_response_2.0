@@ -1,10 +1,11 @@
 import os
 from gw.utils import load_waveform
 from rhs.utils import load_slice_integrals
-from rhs.rhs_integration import compute_rhs_time_series, CubicSplineInterp
-import matplotlib.pyplot as plt
+from rhs.rhs_integration import compute_rhs_time_series
 import numpy as np
 import argparse
+
+from plotting import new_figure, save_figure
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -61,15 +62,16 @@ def main():
     print("[INFO] Saved RHS array file to ", file_name)
 
     # Plot RHS array as a function of time
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = new_figure()
     ax.plot(ts * 1e9, RHS, label="RHS (cylinder slicing method)")
-    ax.set_xlabel("Time [ns]")
-    ax.set_ylabel("RHS(t)")
-    ax.set_title(f"RHS(t) for {args.geometry} cavity mode {mode_name} {args.mode_ind} and waveform file: {args.data}")
+    ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
+    ax.set_ylabel(r"$\mathrm{RHS}(t)$")
+    ax.set_title( f"$\mathrm{{RHS}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}]; \n waveform file: {args.data}" )
     ax.legend()
-    ax.grid(True)
-    fig.savefig(os.path.join(save_dir, f"RHS(t)_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"))
-    #plt.show()
+    save_figure(
+        fig,
+        os.path.join(save_dir,  f"RHS(t)_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"),
+    )
 
 if __name__ == "__main__":
     main()

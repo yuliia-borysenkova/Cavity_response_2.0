@@ -5,6 +5,8 @@ from ode.solver import solve_mode_amplitude
 from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, load_from_config, start_at_zero_crossing
 from scipy.constants import epsilon_0
 
+from plotting import new_figure, save_figure
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--results-dir", type=str, default="results", help="Path to results directory")
@@ -65,33 +67,40 @@ def main():
     result['E'] = E
     save_amplitude(save_dir, result)
 
-    # --- Plot: Mode amplitude ---
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(ts * 1e9, result["c"], label="Mode amplitude c(t)")
-    ax.set_xlabel("t [ns]")
-    ax.set_ylabel("Mode amplitude c(t)")
-    ax.set_title(f"c(t) for {args.geometry} cavity mode {mode_name} {args.mode_ind} and waveform file: {args.data}")
-    ax.grid(True)
-    ax.legend()
-    fig.savefig(os.path.join(save_dir, f"Mode_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"), dpi=200)
+    plots = [
+    (
+        result["c"],
+        r"Mode amplitude $\mathrm{{c}}(t)$",
+        r"Mode amplitude $\mathrm{{c}}(t)$",
+        rf"$\mathrm{{c}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        f"\n waveform file: {args.data}",
+        f"Mode_c_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
+    ),
+    (
+        b_t,
+        r"Mode amplitude $\mathrm{{b}}(t)$",
+        r"Mode amplitude $\mathrm{{b}}(t)$",
+        rf"$\mathrm{{b}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        f"\n waveform file: {args.data}",
+        f"Mode_b_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
+    ),
+    (
+        E,
+        r"Energy $\mathrm{{E}}(t)$",
+        r"Energy $\mathrm{{U}}$ [J]",
+        rf"$\mathrm{{E}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        f"\n waveform file: {args.data}",
+        f"Energy_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
+    ),]
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(ts * 1e9, b_t, label="Mode amplitude b(t)")
-    ax.set_xlabel("t [ns]")
-    ax.set_ylabel("Mode amplitude b(t)")
-    ax.set_title(f"b(t) for {args.geometry} cavity mode {mode_name} {args.mode_ind} and waveform file: {args.data}")
-    ax.grid(True)
-    ax.legend()
-    fig.savefig(os.path.join(save_dir, f"Mode_b_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"), dpi=200)
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(ts * 1e9, E, label="Energy E(t)")
-    ax.set_xlabel("t [ns]")
-    ax.set_ylabel("Energy U [J]")
-    ax.set_title(f"E(t) for {args.geometry} cavity mode {mode_name} {args.mode_ind} and waveform file: {args.data}")
-    ax.grid(True)
-    ax.legend()
-    fig.savefig(os.path.join(save_dir, f"Energy_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"), dpi=200)
+    for y, label, ylabel, title, filename in plots:
+        fig, ax = new_figure()
+        ax.plot(ts * 1e9, y, label=label)
+        ax.set_xlabel(r"$\mathrm{{t}}$ [ns]")
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.legend()
+        save_figure(fig, os.path.join(save_dir, filename))
 
 if __name__ == "__main__":
     main()

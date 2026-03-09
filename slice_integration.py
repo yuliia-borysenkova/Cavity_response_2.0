@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 from modes import RectangularMode, CylindricalMode, SphericalMode
 from rhs.slice_integration import SliceIntegration
-from rhs.utils import parse_vector
 import numpy as np
 
 # ---------------- Argument parsing ----------------

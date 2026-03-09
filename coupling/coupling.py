@@ -1,5 +1,4 @@
 import numpy as np
-import os
 from tqdm import tqdm
 from gw.utils import h_monochromatic
 from rhs.utils import compute_k_pol, make_jeff
