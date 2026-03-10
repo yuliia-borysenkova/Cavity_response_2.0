@@ -4,12 +4,15 @@ import matplotlib.pyplot as plt
 
 STYLE_PATH = Path(__file__).with_name("style.mplstyle")
 
-def apply_style():
-    plt.style.use(STYLE_PATH)
+def apply_style(style=None):
+    if style is None:
+        plt.style.use(STYLE_PATH)
+    else:
+        plt.style.use(style)
 
-def new_figure(**kwargs):
-    apply_style()
-    return plt.subplots(**kwargs)
+def new_figure(style=None, nrows=1, ncols=1, **kwargs):
+    apply_style(style)
+    return plt.subplots(nrows=nrows, ncols=ncols, **kwargs)
 
 def save_figure(fig, path, **kwargs):
     path = Path(path)
