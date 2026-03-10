@@ -10,7 +10,7 @@ def apply_style(style=None):
     else:
         plt.style.use(style)
 
-def new_figure(style=None, nrows=1, ncols=1, **kwargs):
+def new_figure(nrows=1, ncols=1, style=None, **kwargs):
     apply_style(style)
     return plt.subplots(nrows=nrows, ncols=ncols, **kwargs)
 
