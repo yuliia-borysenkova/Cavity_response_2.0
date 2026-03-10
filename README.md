@@ -201,3 +201,11 @@ pyenv virtualenv 3.10.0 cavity-response
 pyenv activate cavity-response
 pip install -r requirements.txt
 ```
+
+### Using conda
+```bash
+conda create -n cavity-response python=3.10
+conda activate cavity-response
+pip install -r requirements.txt
+```
+
