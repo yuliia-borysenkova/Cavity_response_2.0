@@ -32,7 +32,7 @@ def plot_waveform(data, labels=("h+", "hx"), title=None, save_path=None):
         plt.savefig(save_path+".png", dpi=200)
         print(f"[INFO] Saved plot to {save_path}")
         
-    plt.show()
+    #plt.show()
 
 def prepare_output_path(data_folder, output_stem, M_abs, q):
     

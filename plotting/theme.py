@@ -1,12 +1,14 @@
 from pathlib import Path
-
+#import scienceplots
 import matplotlib.pyplot as plt
 
-STYLE_PATH = Path(__file__).with_name("style.mplstyle")
+STYLE_PATH = Path(__file__).with_name("style_aps2.mplstyle")
 
 def apply_style(style=None):
     if style is None:
         plt.style.use(STYLE_PATH)
+    # if style == "science":
+    #     plt.style.context(['science', 'high-vis']) #plt.style.context(['science', 'ieee'])
     else:
         plt.style.use(style)
 

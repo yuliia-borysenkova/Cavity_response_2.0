@@ -6,18 +6,21 @@ import numpy as np
 import argparse
 
 from plotting import new_figure, save_figure
+from misc.resonant_frequency_matches import find_chirp_match_time, load_cavity_frequency_from_run_config
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data", required=True)
-    parser.add_argument("--data-dir", default="data")
-    parser.add_argument("--results-dir", default="results")
+    parser.add_argument("--data", type=str, required=True, help="Path to .npy data file")
+    parser.add_argument("--data-dir", type=str, default="data", help="Directory containing the .npy data file and its config")
+    parser.add_argument("--results-dir", type=str, default="results", help="Path to results directory")
     parser.add_argument("--Nt", type=int, default=1000)
     parser.add_argument("--Ns", type=int, default=100)
     
     parser.add_argument("--NLGrid", action="store_true", help="Enable grid adaptation for VEGAS integration")
     parser.add_argument("--density-boost", type=float, default=5.0, help="Density boost factor for non-uniform time grid (if NLGrid is enabled)")
     
+    parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot")
+
     parser.add_argument("--method", choices=["quad", "vegas"], default="quad")
     parser.add_argument("--nproc", type=int, default=1)
     
@@ -64,6 +67,13 @@ def main():
     # Plot RHS array as a function of time
     fig, ax = new_figure()
     ax.plot(ts * 1e9, RHS, label="RHS (cylinder slicing method)")
+
+    # Add vertical line for resonant time if frequency matching is enabled
+    f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+    t_match, _ = find_chirp_match_time(ts=ts, f_cavity=f_cavity, data_dir=args.data_dir, data_file_name=args.data)
+    if t_match is not None and args.freq_match:
+        ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
+
     ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
     ax.set_ylabel(r"$\mathrm{RHS}(t)$")
     ax.set_title( f"$\mathrm{{RHS}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}]; \n waveform file: {args.data}" )
