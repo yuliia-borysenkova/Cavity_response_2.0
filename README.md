@@ -149,6 +149,7 @@ Computes the driving term I_n(t).
 | `--mode-par` | *(required)* | `a`, `b`, or `None` |
 | `--mode-ind` | `0,1,0` | Mode indices |
 | `--L` | `0.1` | Characteristic cavity length (m) |
+| `--freq-match` | `False` | Match GW frequency to cavity resonant frequency |
 
 ------------------------------------------------------------------------
 
@@ -188,6 +189,7 @@ Computes direction-dependent coupling C_gw(θ, φ).
 | `--N-phi` | `1` | Number of azimuthal angles sampled |
 | `--nproc` | `1` | Parallel processes |
 | `--save-dir` | `results/coupling` | Output directory |
+| `--freq-match` | `False` | Match GW frequency to cavity resonant frequency |
 
 
 ------------------------------------------------------------------------
