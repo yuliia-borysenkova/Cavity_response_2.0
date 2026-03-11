@@ -17,9 +17,9 @@ def parse_args():
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of gravitational wave approach in degrees")
     parser.add_argument("--phi", type=float, default=0.0, help="Azimuthal angle of gravitational wave approach in degrees")
 
-    parser.add_argument("--Q", type=float, default=1e5)
-    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical")
-    parser.add_argument("--mode-fam", choices=["TM", "TM"])
+    parser.add_argument("--Q", type=float, default=1e5, help="Quality factor of the cavity")
+    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
+    parser.add_argument("--mode-fam", choices=["TM", "TM"], help="Cavity mode family")
     parser.add_argument("--mode-par", choices=["a", "b", None], help="Cavity mode to excite")
     parser.add_argument("--mode-ind", type=str, default="0,1,0", help="Mode indices [n,p,q] as comma-separated values")
 

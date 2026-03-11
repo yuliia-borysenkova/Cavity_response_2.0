@@ -13,23 +13,23 @@ def parse_args():
     parser.add_argument("--data", type=str, required=True, help="Path to .npy data file")
     parser.add_argument("--data-dir", type=str, default="data", help="Directory containing the .npy data file and its config")
     parser.add_argument("--results-dir", type=str, default="results", help="Path to results directory")
-    parser.add_argument("--Nt", type=int, default=1000)
-    parser.add_argument("--Ns", type=int, default=100)
+    parser.add_argument("--Nt", type=int, default=1000, help="Number of time samples")
+    parser.add_argument("--Ns", type=int, default=100, help="Number of spatial samples")
     
     parser.add_argument("--NLGrid", action="store_true", help="Enable grid adaptation for VEGAS integration")
     parser.add_argument("--density-boost", type=float, default=5.0, help="Density boost factor for non-uniform time grid (if NLGrid is enabled)")
     
     parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot")
 
-    parser.add_argument("--method", choices=["quad", "vegas"], default="quad")
-    parser.add_argument("--nproc", type=int, default=1)
+    parser.add_argument("--method", choices=["quad", "vegas"], default="quad", help="Integration method")
+    parser.add_argument("--nproc", type=int, default=1, help="Number of processors for parallel integration")
     
-    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical")
-    parser.add_argument("--mode-fam", choices=["TE", "TM"])
-    parser.add_argument("--mode-par", choices=["a", "b", None])
-    parser.add_argument("--mode-ind", default="0,1,0")
+    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
+    parser.add_argument("--mode-fam", choices=["TE", "TM"], help="Mode family (TE or TM)")
+    parser.add_argument("--mode-par", choices=["a", "b", None], help="Mode parameter")
+    parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated integers")
     
-    parser.add_argument("--L", default=0.1)
+    parser.add_argument("--L", default=0.1, help="Cavity length scale parameter")
 
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of gravitational wave approach in degrees")
     parser.add_argument("--phi", type=float, default=0.0, help="Azimuthal angle of gravitational wave approach in degrees")
