@@ -12,34 +12,34 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Cavity mode simulation CLI")
     
     # Geometry selection
-    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical")
+    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
     
     # Mode selection
-    parser.add_argument("--mode-fam", choices=["TE", "TM"])
-    parser.add_argument("--mode-par", choices=["a", "b", None])
-    parser.add_argument("--mode-ind", default="0,1,0")
+    parser.add_argument("--mode-fam", choices=["TE", "TM"], help="Mode family (TE or TM)")
+    parser.add_argument("--mode-par", choices=["a", "b", None], help="Mode polarization parameter")
+    parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
     
     # Simulation parameters
-    parser.add_argument("--Bz", type=float, default=14.0)
+    parser.add_argument("--Bz", type=float, default=14.0, help="Magnetic field strength in Tesla")
     
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of gravitational wave approach in degrees")
     parser.add_argument("--phi", type=float, default=0.0, help="Azimuthal angle of gravitational wave approach in degrees")
     
-    parser.add_argument("--Ns", type=int, default=100)
-    parser.add_argument("--nproc", type=int, default=1)
-    parser.add_argument("--method", choices=["vegas", "nquad"], default="nquad")
+    parser.add_argument("--Ns", type=int, default=100, help="Number of samples for integration")
+    parser.add_argument("--nproc", type=int, default=1, help="Number of processors for parallel execution")
+    parser.add_argument("--method", choices=["vegas", "nquad"], default="nquad", help="Integration method")
     
     # Rectangular cavity
-    parser.add_argument("--a", type=float, default=0.1)
-    parser.add_argument("--b", type=float, default=0.1)
-    parser.add_argument("--c", type=float, default=0.1)
+    parser.add_argument("--a", type=float, default=0.1, help="Rectangular cavity dimension a (meters)")
+    parser.add_argument("--b", type=float, default=0.1, help="Rectangular cavity dimension b (meters)")
+    parser.add_argument("--c", type=float, default=0.1, help="Rectangular cavity dimension c (meters)")
     
     # Cylindrical/Spherical cavity
-    parser.add_argument("--R", type=float, default=0.04)
-    parser.add_argument("--L", type=float, default=0.24)
+    parser.add_argument("--R", type=float, default=0.04, help="Cavity radius (meters)")
+    parser.add_argument("--L", type=float, default=0.24, help="Cylindrical cavity length (meters)")
 
     # Results directory
-    parser.add_argument("--results-dir", type=str, default="results")
+    parser.add_argument("--results-dir", type=str, default="results", help="Directory to save simulation results")
     
     return parser.parse_args()
 
