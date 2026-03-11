@@ -1,6 +1,7 @@
 import os
 import argparse
 import matplotlib.pyplot as plt
+from misc.resonant_frequency_matches import find_chirp_match_time, load_cavity_frequency_from_run_config
 from ode.solver import solve_mode_amplitude
 from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, load_from_config, start_at_zero_crossing
 from scipy.constants import epsilon_0
@@ -10,8 +11,9 @@ from plotting import new_figure, save_figure
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--results-dir", type=str, default="results", help="Path to results directory")
-    parser.add_argument("--data", type=str, help="Path to .npy data file")
-    
+    parser.add_argument("--data", type=str, required=True, help="Path to .npy data file")
+    parser.add_argument("--data-dir", type=str, default="data", help="Directory containing the .npy data file and its config")
+
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of gravitational wave approach in degrees")
     parser.add_argument("--phi", type=float, default=0.0, help="Azimuthal angle of gravitational wave approach in degrees")
 
@@ -20,6 +22,8 @@ def parse_args():
     parser.add_argument("--mode-fam", choices=["TM", "TM"])
     parser.add_argument("--mode-par", choices=["a", "b", None], help="Cavity mode to excite")
     parser.add_argument("--mode-ind", type=str, default="0,1,0", help="Mode indices [n,p,q] as comma-separated values")
+
+    parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot")
 
     parser.add_argument("--extend", type=float, default=1.0, help="Extend the computation time to x the signal time")
     return parser.parse_args()
@@ -96,6 +100,13 @@ def main():
     for y, label, ylabel, title, filename in plots:
         fig, ax = new_figure()
         ax.plot(ts * 1e9, y, label=label)
+
+        # Add vertical line for resonant time if frequency matching is enabled
+        f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+        t_match, _ = find_chirp_match_time(ts=ts, f_cavity=f_cavity, data_dir=args.data_dir, data_file_name=args.data)
+        if t_match is not None and args.freq_match:
+            ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
+
         ax.set_xlabel(r"$\mathrm{{t}}$ [ns]")
         ax.set_ylabel(ylabel)
         ax.set_title(title)
