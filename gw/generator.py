@@ -36,6 +36,7 @@ class WaveformConfig:
     clip: bool = False
     memory: bool = False
     plot: bool = False
+    display: bool = False
     
     # Output
     data_dir: str = "data"
@@ -78,15 +79,15 @@ class WaveformPipeline:
         ) / ratio
 
         if self.cfg.plot:
-            plot_waveform(data, ("h+ " + self.cfg.approximant, "hx " + self.cfg.approximant))
+            plot_waveform(data, (r"$h_+$ " + self.cfg.approximant, r"$h_\times$ " + self.cfg.approximant), display=self.cfg.display)
 
         if self.cfg.clip:
             print("[INFO] Clipping waveform")
-            data = clip_waveform(data, self.cfg.clip_th1, self.cfg.clip_th2, self.cfg.plot)
+            data = clip_waveform(data, self.cfg.clip_th1, self.cfg.clip_th2, self.cfg.plot, self.cfg.display)
 
         if self.cfg.polarization_angle != 0: # Should this go before or after memory?
             print(f"========== Rotating by polarization angle {self.cfg.polarization_angle} rad ========== ")
-            data = rotate_polarization(data, self.cfg.polarization_angle, self.cfg.plot)
+            data = rotate_polarization(data, self.cfg.polarization_angle, self.cfg.plot, self.cfg.display)
 
         if self.cfg.memory:
             print("[INFO] Adding GW memory")
@@ -99,12 +100,13 @@ class WaveformPipeline:
                 self.cfg.approximant,
                 ratio,
                 self.cfg.plot,
+                self.cfg.display
             )
 
         if self.cfg.plot:
-            plot_waveform(data, ("h+ final " + self.cfg.approximant, "hx final " + self.cfg.approximant),
+            plot_waveform(data, (r"$h_+$ final " + self.cfg.approximant, r"$h_\times$ final " + self.cfg.approximant),
                           title = f"GW waveform for a m1 = {m1 / ratio}, m2 = {m2 / ratio} solar mass BH merger",
-                          save_path=self.output_path)
+                          save_path=self.output_path, display=self.cfg.display)
 
         return data
 

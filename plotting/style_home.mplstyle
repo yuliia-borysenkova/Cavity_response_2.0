@@ -1,0 +1,41 @@
+text.usetex: True
+font.family: serif
+font.serif: Computer Modern Roman
+
+font.size: 13
+axes.titlesize: 14
+axes.labelsize: 15
+xtick.labelsize: 12
+ytick.labelsize: 12
+legend.fontsize: 11
+axes.linewidth: 1.0
+lines.linewidth: 1.0
+lines.markersize: 4
+
+# ---- Grid ----
+axes.grid: True
+grid.linewidth: 0.5
+grid.alpha: 0.18
+grid.linestyle: "--"
+
+
+figure.figsize: 8.0, 4.6
+savefig.dpi: 300
+savefig.bbox: tight
+savefig.pad_inches: 0.08
+figure.facecolor: white
+axes.facecolor: white
+
+# ---- Ticks ----
+xtick.direction: in
+ytick.direction: in
+xtick.major.size: 5
+ytick.major.size: 5
+xtick.major.width: 1.0
+ytick.major.width: 1.0
+xtick.minor.visible: True
+ytick.minor.visible: True
+xtick.minor.size: 3
+ytick.minor.size: 3
+xtick.minor.width: 0.8
+ytick.minor.width: 0.8

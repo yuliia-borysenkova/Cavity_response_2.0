@@ -3,6 +3,7 @@ from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import asdict
+from plotting import new_figure, save_figure
 
 def load_waveform(directory, derivative=0):
 
@@ -18,21 +19,23 @@ def load_waveform(directory, derivative=0):
 def h_monochromatic(amplitude, tau, omega):
     return amplitude * np.exp(1j * omega * tau)
 
-def plot_waveform(data, labels=("h+", "hx"), title=None, save_path=None):
-    plt.figure(figsize=(10,5))
-    plt.title(title)
-    plt.plot(data[0], data[1], label=labels[0])
-    plt.plot(data[0], data[2], label=labels[1])
-    plt.xlabel("Time [s]")
-    plt.ylabel("Strain")
-    plt.legend()
-    plt.grid()
+def plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title=None, save_path=None, display=False):
+
+    fig, ax = new_figure()
+    
+    ax.set_title(title)
+    ax.plot(data[0], data[1], label=labels[0])
+    ax.plot(data[0], data[2], label=labels[1])
+    ax.set_xlabel(r"$t$, [s]")
+    ax.set_ylabel("Strain $h$")
+    ax.legend()
     
     if save_path is not None:
-        plt.savefig(save_path+".png", dpi=200)
+        save_figure(fig, save_path+".png")
         print(f"[INFO] Saved plot to {save_path}")
         
-    plt.show()
+    if display:    
+        plt.show()
 
 def prepare_output_path(data_folder, output_stem, M_abs, q):
     
