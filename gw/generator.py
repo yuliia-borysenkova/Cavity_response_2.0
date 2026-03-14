@@ -29,7 +29,7 @@ class WaveformConfig:
     high_freq: float = 1e12
     
     # Distance
-    distance: float = 1e-11
+    distance: float = 1e-5
     
     # Waveform options
     approximant: str = "IMRPhenomD"
