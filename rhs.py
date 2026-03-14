@@ -64,7 +64,7 @@ def main():
     else:
         pre_RHS = []
 
-    print(f"Computed in {time.time()-start: .4f} s.")
+    print(f"[INFO] Computed in {time.time()-start: .4f} s.")
         
     # Save RHS array to file
     file_name = os.path.join(save_dir, f"RHS_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.npz")
