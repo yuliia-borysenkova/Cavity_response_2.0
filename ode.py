@@ -63,7 +63,7 @@ def main():
         ts=ts_ext, RHS_fn=RHS_fn,
         omega=omega, Q=args.Q,
     )
-    print(f"[INFO] ODE solved in {time.time()-start:.2f} s.")
+    print(f"[INFO] Computed in {time.time()-start:.2f} s.")
     
     print("[INFO] Computing magnetic mode coefficients...")
     c_t = result['c']
