@@ -1,4 +1,4 @@
-import argparse, json
+import argparse, json, time
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional
 from gw.generator import WaveformPipeline, WaveformConfig
@@ -68,7 +68,7 @@ def parse_arguments() -> WaveformConfig:
     parser.add_argument("--output", type=str, default=None,
                         help="Output filename stem (without extension).")
 
-    parser.add_argument("--density-factor", type=float, default=2.0, help="Density scaling factor applied to the waveform.")
+    parser.add_argument("--density-factor", type=float, default=5.0, help="Density scaling factor applied to the waveform.")
 
     parser.add_argument("--clip-th1", type=float, default=0.2, help="Primary clipping threshold (relative amplitude).")
 
@@ -83,9 +83,11 @@ def main():
     cfg = parse_arguments()
     output_path = prepare_output_path(cfg.data_dir, cfg.output, cfg.m_absolute, cfg.q)
     save_config_to_json(cfg, output_path)
-    
+
+    start = time.time()
     pipeline = WaveformPipeline(cfg, output_path)
     data = pipeline.run()
+    print(f"[INFO] Computed in {time.time()-start: .2f} s.")
     
     np.save(output_path + ".npy", data)
     print(f"[INFO] Saved waveform data to {output_path}.npy")
