@@ -59,6 +59,9 @@ def parse_arguments() -> WaveformConfig:
     parser.add_argument("--plot", action="store_true",
                         help="Plot waveforms at each stage of generation.")
 
+    parser.add_argument("--display", action="store_true",
+                        help="Display waveforms at each stage of generation.")
+
     parser.add_argument("--data-dir", type=str, default='data',
                         help="Folder where output files will be saved. Created if it does not exist.")
     
