@@ -6,7 +6,7 @@ def driven_mode_rhs(t, y, omega, Q, RHS_fn):
     rhs_val = RHS_fn(t)
     return [
         uD,
-        -omega / Q * uD - omega**2 * u - omega * c_cnst * rhs_val
+        -omega / Q * uD - omega**2 * u - c_cnst * rhs_val
     ]
 
 def solve_mode_amplitude(ts, RHS_fn, omega, Q, y0=(0.0, 0.0), method="Radau", rtol=1e-9, atol=1e-16):
@@ -26,8 +26,8 @@ def solve_mode_amplitude(ts, RHS_fn, omega, Q, y0=(0.0, 0.0), method="Radau", rt
     
     return {
         "t": ts,
-        "u": u,
-        "uD": uD,
-        "c": u / omega,  # Convert back to physical amplitude c(t)
-        "cD": uD / omega,
+#        "u": u,
+#        "uD": uD,
+        "c": u,  # Convert back to physical amplitude c(t)
+        "cD": uD,
     }

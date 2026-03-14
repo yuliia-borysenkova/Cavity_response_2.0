@@ -11,7 +11,7 @@ def load_waveform(directory, derivative=0):
 
     for i in range(derivative):
         hpl = np.gradient(hpl, t_data)
-        hcr = np.gradient(hpl, t_data)
+        hcr = np.gradient(hcr, t_data)
 
     return t_data, hpl, hcr
 
@@ -32,7 +32,7 @@ def plot_waveform(data, labels=("h+", "hx"), title=None, save_path=None):
         plt.savefig(save_path+".png", dpi=200)
         print(f"[INFO] Saved plot to {save_path}")
         
-    #plt.show()
+    plt.show()
 
 def prepare_output_path(data_folder, output_stem, M_abs, q):
     

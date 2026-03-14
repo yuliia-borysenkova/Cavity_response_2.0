@@ -1,11 +1,9 @@
-import os
-import argparse
+import os, argparse, time
 import matplotlib.pyplot as plt
+import numpy as np
 from misc.resonant_frequency_matches import find_chirp_match_time, load_cavity_frequency_from_run_config
 from ode.solver import solve_mode_amplitude
-from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, load_from_config, start_at_zero_crossing
-from scipy.constants import epsilon_0
-
+from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, compute_U, load_from_config, clip_at_zero_crossing, taper_signal
 from plotting import new_figure, save_figure
 
 def parse_args():
@@ -46,60 +44,69 @@ def main():
 
     omega, norm = load_from_config(run_dir)
 
-    ts, RHS, RHS_fn = load_rhs(rhs_path)
+    ts, RHS, pre_RHS = load_rhs(rhs_path)
 
-    ts, RHS = start_at_zero_crossing(ts, RHS)
+    #ts, RHS = clip_at_zero_crossing(ts, RHS)
+    RHS = taper_signal(RHS)
     
-    if args.extend != 1.0:
-        ts, RHS, RHS_fn = extend_rhs(ts, RHS, args.extend)
+    ts_ext, RHS, RHS_fn = extend_rhs(ts, RHS, args.extend)
+    
+    if pre_RHS.size > 0:
+        _, pre_RHS, pre_RHS_fn = extend_rhs(ts, pre_RHS, args.extend)
+    else:
+        pre_RHS = np.zeros_like(RHS)
+
+    start = time.time()
 
     print("[INFO] Solving the ODE with a given RHS(t)...")
     result = solve_mode_amplitude(
-        ts=ts, RHS_fn=RHS_fn,
+        ts=ts_ext, RHS_fn=RHS_fn,
         omega=omega, Q=args.Q,
     )
-    print("[INFO] ODE solved.")
+    print(f"[INFO] ODE solved in {time.time()-start:.2f} s.")
     
     print("[INFO] Computing magnetic mode coefficients...")
     c_t = result['c']
-    b_t = compute_b(ts, c_t, omega)
-    print("[INFO] Magnetic mode coefficients computed.")
-    
-    E = 1/2 * epsilon_0 * norm**2 * (c_t**2 + b_t**2)
+    cD_t = result['cD']
+    b_t = compute_b(c_t, cD_t, pre_RHS, args.Q, omega)
+    U = compute_U(c_t, b_t)
 
     result['b'] = b_t
-    result['E'] = E
+    result['U'] = U
+    
+    print("[INFO] Magnetic mode coefficients computed.")
+
     save_amplitude(save_dir, result)
 
     plots = [
     (
-        result["c"],
-        r"Mode amplitude $\mathrm{{c}}(t)$",
-        r"Mode amplitude $\mathrm{{c}}(t)$",
-        rf"$\mathrm{{c}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        c_t,
+        r"Mode amplitude $c(t)$",
+        r"Mode amplitude $c(t)$",
+        rf"$c(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
         f"\n waveform file: {args.data}",
         f"Mode_c_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
     ),
     (
         b_t,
-        r"Mode amplitude $\mathrm{{b}}(t)$",
-        r"Mode amplitude $\mathrm{{b}}(t)$",
-        rf"$\mathrm{{b}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        r"Mode amplitude $b(t)$",
+        r"Mode amplitude $b(t)$",
+        rf"$b(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
         f"\n waveform file: {args.data}",
         f"Mode_b_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
     ),
     (
-        E,
-        r"Energy $\mathrm{{E}}(t)$",
-        r"Energy $\mathrm{{U}}$ [J]",
-        rf"$\mathrm{{E}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        U,
+        r"Energy $U(t)$",
+        r"Energy $U$, [J]",
+        rf"$U(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
         f"\n waveform file: {args.data}",
         f"Energy_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
     ),]
 
     for y, label, ylabel, title, filename in plots:
         fig, ax = new_figure()
-        ax.plot(ts * 1e9, y, label=label)
+        ax.plot(ts_ext * 1e9, y, label=label)
 
         # Add vertical line for resonant time if frequency matching is enabled
         f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
@@ -107,7 +114,7 @@ def main():
         if t_match is not None and args.freq_match:
             ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
 
-        ax.set_xlabel(r"$\mathrm{{t}}$ [ns]")
+        ax.set_xlabel(r"$t$ [ns]")
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         ax.legend()

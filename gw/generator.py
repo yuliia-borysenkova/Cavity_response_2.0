@@ -42,7 +42,7 @@ class WaveformConfig:
     output: Optional[str] = None
 
     # Optional hyperparameters
-    density_factor: Optional[float] = 2.0
+    density_factor: Optional[float] = 5.0
     clip_th1: Optional[float] = 0.2
     clip_th2: Optional[float] = 1e-4
 
