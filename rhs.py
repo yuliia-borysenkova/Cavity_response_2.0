@@ -1,5 +1,4 @@
-import os
-import argparse
+import os, argparse, time
 import matplotlib.pyplot as plt
 import numpy as np
 from gw.utils import load_waveform
@@ -42,6 +41,8 @@ def main():
 
     data = os.path.join(args.data_dir, args.data + ".npy")
 
+    start = time.time()
+
     save_dir, area_data = load_slice_integrals(data, args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi, args.Ns)
     x_par_arr, E_plus, E_cross = area_data
     t_data, hplus_dd, hcross_dd = load_waveform(data, derivative=2)
@@ -62,6 +63,8 @@ def main():
         )
     else:
         pre_RHS = []
+
+    print(f"Computed in {time.time()-start: .4f} s.")
         
     # Save RHS array to file
     file_name = os.path.join(save_dir, f"RHS_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.npz")
