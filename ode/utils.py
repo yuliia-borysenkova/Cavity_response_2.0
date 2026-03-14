@@ -3,24 +3,21 @@ import numpy as np
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 from modes import CylindricalMode, SphericalMode, RectangularMode
 from scipy import interpolate
-from scipy.integrate import cumulative_simpson
+from scipy.constants import c as c_cnst
+from scipy.constants import epsilon_0
 
 
 def load_rhs(rhs_path):
     
     if not os.path.isfile(rhs_path):
-        raise FileNotFoundError(f"[ERROR] {rhs_path} file not found in {save_dir}")
+        raise FileNotFoundError(f"[ERROR] {rhs_path} file not found")
         
     data = np.load(rhs_path)
     ts = data["ts"]
     RHS = np.real(data["RHS"])
+    pre_RHS = np.real(data["pre_RHS"])
 
-    RHS_fn = interpolate.interp1d(
-        ts, RHS, kind="linear",
-        bounds_error=False, fill_value=0.0
-    )
-
-    return ts, RHS, RHS_fn
+    return ts, RHS, pre_RHS
 
 def save_amplitude(save_dir, result):
     path = os.path.join(save_dir, "amplitude_package.npz")
@@ -63,68 +60,42 @@ def extend_rhs(time, RHS, factor):
 
     return new_time, new_RHS, new_RHS_fn
 
-def start_at_zero_crossing(time, RHS):
+def compute_b(c, cD, pre_RHS, Q, omega):
 
-    # Find indices where sign changes
-    crossings = []
-    #crossings = np.where(np.sign(RHS[:-1]) != np.sign(RHS[1:]))[0]
+    b = 1/omega * (cD + c_cnst * pre_RHS) + c/Q
 
-    if len(crossings) == 0:
-        return time, RHS  # no crossing found
+    return b
 
-    start_idx = crossings[1] + 1
-    return time [start_idx:], RHS[start_idx:]
+def compute_U(c, b):
 
-def compute_b(time, c, omega):
+    U = 1/2 * epsilon_0 * (c**2 + b**2)
 
-    if time.ndim != 1 or c.ndim != 1:
-        raise ValueError("time and c must be 1D arrays")
+    return U
+    
+def clip_at_zero_crossing(t, c):
+    # indices where sign changes
+    crossings = np.where(np.diff(np.sign(c)) != 0)[0]
 
-    if len(time) != len(c):
-        raise ValueError("time and c must have the same length")
+    if len(crossings) < 2:
+        raise ValueError("Less than two zero crossings found")
 
-    if len(time) < 2:
-        raise ValueError("time array must contain at least two points")
+    i = crossings[1] + 1  # second crossing
 
-    # Ensure uniform time spacing
-    dt = time[1] - time[0]
-    if not np.allclose(np.diff(time), dt):
-        raise ValueError("time array must be uniformly spaced")
+    return t[i:], c[i:]
 
-    # Cumulative trapezoidal integration
-    integral = np.zeros_like(c, dtype=float)
-    # integral[1:] = np.cumsum(0.5 * (c[1:] + c[:-1]) * dt)
-    integral = cumulative_simpson(c, x=time, initial=0)
+def taper_signal(RHS, n_taper=100):
+    RHS = np.asarray(RHS)
+    N = len(RHS)
 
-    b = -omega * integral
+    if n_taper >= N:
+        raise ValueError("n_taper must be smaller than signal length")
 
-    # # ---- Find first local extrema ----
-    # db = np.diff(b)
-    # sign = np.sign(db)
-    # sign_change = np.diff(sign)
+    mask = np.ones(N)
 
-    # # local maxima where sign goes + -> -
-    # maxima = np.where(sign_change < 0)[0] + 1
+    # cosine taper from 1 → 0
+    x = np.linspace(0, np.pi/2, n_taper)
+    mask[-n_taper:] = np.cos(x)**2
 
-    # # local minima where sign goes - -> +
-    # minima = np.where(sign_change > 0)[0] + 1
+    return RHS * mask
 
-    # if len(maxima) == 0 or len(minima) == 0:
-    #     raise ValueError("Could not detect oscillation extrema")
-
-    # first_max = maxima[1]
-    # first_min = minima[minima > first_max]
-
-    # if len(first_min) == 0:
-    #     # If minimum comes first instead
-    #     first_min = minima[1]
-    #     first_max = maxima[maxima > first_min][0]
-    # else:
-    #     first_min = first_min[0]
-
-    # shift = 0.5 * (b[first_max] + b[first_min])
-
-    # print(shift, b.mean())
-
-    return b - b.mean()
 
