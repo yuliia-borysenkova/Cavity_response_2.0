@@ -112,8 +112,8 @@ Computes transverse kernels A_plus and A_cross.
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `--geometry` | `cylindrical` | Geometry (`cylindrical`, `spherical`, `rectangular`) |
-| `--mode-fam` | *(required)* | `TE` or `TM` |
-| `--mode-par` | *(required)* | `a`, `b`, or `None` |
+| `--mode-fam` | `TM` | `TE` or `TM` |
+| `--mode-par` | `b` | `a`, `b`, or `None` |
 | `--mode-ind` | `0,1,0` | Mode indices |
 | `--Bz` | `14.0` | Background magnetic field (T) |
 | `--Ns` | `100` | Number of spatial steps |
@@ -137,16 +137,12 @@ Computes the driving term I_n(t).
 | `--data` | *(required)* | Waveform identifier / filename stem |
 | `--data-dir` | `data` | Directory with waveform data |
 | `--results-dir` | `results` | Output directory |
-| `--Nt` | `1000` | Number of time steps |
-| `--NLGrid` | `False` | Enable non-uniform (adaptive) time grid |
-| `--density-boost` | `5.0` | Density enhancement in oscillatory region |
-| `--method` | `quad` | Integration method (`quad` or `vegas`) |
-| `--nproc` | `1` | Parallel processes |
+| `--Nt` | `10000` | Number of time steps |
 | `--theta` | `45.0` | Polar angle of GW incidence (deg) |
 | `--phi` | `0.0` | Azimuthal angle of GW incidence (deg) |
 | `--geometry` | `cylindrical` | Geometry |
-| `--mode-fam` | *(required)* | `TE` or `TM` |
-| `--mode-par` | *(required)* | `a`, `b`, or `None` |
+| `--mode-fam` | `TM` | `TE` or `TM` |
+| `--mode-par` | `b` | `a`, `b`, or `None` |
 | `--mode-ind` | `0,1,0` | Mode indices |
 | `--L` | `0.1` | Characteristic cavity length (m) |
 | `--freq-match` | `False` | Match GW frequency to cavity resonant frequency |
@@ -166,7 +162,7 @@ Solves the driven damped oscillator equation.
 | `--Q` | `1e5` | Cavity quality factor |
 | `--geometry` | `cylindrical` | Geometry |
 | `--mode-fam` | `TM` | Mode family |
-| `--mode-par` | *(required)* | `a`, `b`, or `None` |
+| `--mode-par` | `b` | `a`, `b`, or `None` |
 | `--mode-ind` | `0,1,0` | Mode indices |
 ------------------------------------------------------------------------
 
@@ -179,8 +175,8 @@ Computes direction-dependent coupling C_gw(θ, φ).
 | `--geometry` | `cylindrical` | Geometry (`cylindrical`, `spherical`, `rectangular`) |
 | `--mode-fam` | `TM` | Mode family (`TM` or `TE`) |
 | `--mode-ind` | `0,1,0` | Mode indices |
-| `--R` | *(required)* | Radius (m) for cylindrical/spherical cavities |
-| `--L` | *(required)* | Length (m) for cylindrical/spherical cavities |
+| `--R` | `0.1` | Radius (m) for cylindrical/spherical cavities |
+| `--L` | `0.2`| Length (m) for cylindrical/spherical cavities |
 | `--a` | *(required)* | Rectangular x-dimension (m) |
 | `--b` | *(required)* | Rectangular y-dimension (m) |
 | `--c` | *(required)* | Rectangular z-dimension (m) |
