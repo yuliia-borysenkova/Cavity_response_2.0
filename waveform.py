@@ -35,7 +35,7 @@ def parse_arguments() -> WaveformConfig:
     parser.add_argument("--tc", type=float, default=0.0,
                         help="Time of coalescence in seconds.")
     
-    parser.add_argument("--distance", type=float, default=1e-11,
+    parser.add_argument("--distance", type=float, default=1e-5,
                         help="Distance to the source in parsecs.")
     
     parser.add_argument("--inclination", type=float, default=0.0,
