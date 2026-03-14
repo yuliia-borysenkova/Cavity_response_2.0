@@ -15,8 +15,8 @@ def parse_args():
     parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
     
     # Mode selection
-    parser.add_argument("--mode-fam", choices=["TE", "TM"], help="Mode family (TE or TM)")
-    parser.add_argument("--mode-par", choices=["a", "b", None], help="Mode polarization parameter")
+    parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
+    parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity (even or odd)")
     parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
     
     # Simulation parameters
@@ -30,9 +30,9 @@ def parse_args():
     parser.add_argument("--method", choices=["vegas", "nquad"], default="nquad", help="Integration method")
     
     # Rectangular cavity
-    parser.add_argument("--a", type=float, default=0.1, help="Rectangular cavity dimension a (meters)")
-    parser.add_argument("--b", type=float, default=0.1, help="Rectangular cavity dimension b (meters)")
-    parser.add_argument("--c", type=float, default=0.1, help="Rectangular cavity dimension c (meters)")
+    parser.add_argument("--a", type=float, default=0.1, help="Rectangular cavity x-dimension length (meters)")
+    parser.add_argument("--b", type=float, default=0.1, help="Rectangular cavity y-dimension length (meters)")
+    parser.add_argument("--c", type=float, default=0.1, help="Rectangular cavity z-dimension length (meters)")
     
     # Cylindrical/Spherical cavity
     parser.add_argument("--R", type=float, default=0.04, help="Cavity radius (meters)")
