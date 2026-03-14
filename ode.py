@@ -114,7 +114,7 @@ def main():
         if t_match is not None and args.freq_match:
             ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
 
-        ax.set_xlabel(r"$t$ [ns]")
+        ax.set_xlabel(r"$t$, [ns]")
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         ax.legend()
