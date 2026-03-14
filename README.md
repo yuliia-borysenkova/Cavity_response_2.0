@@ -137,7 +137,7 @@ Computes the driving term I_n(t).
 | `--data` | *(required)* | Waveform identifier / filename stem |
 | `--data-dir` | `data` | Directory with waveform data |
 | `--results-dir` | `results` | Output directory |
-| `--Nt` | `1000` | Number of time steps |
+| `--Nt` | `10000` | Number of time steps |
 | `--theta` | `45.0` | Polar angle of GW incidence (deg) |
 | `--phi` | `0.0` | Azimuthal angle of GW incidence (deg) |
 | `--geometry` | `cylindrical` | Geometry |
