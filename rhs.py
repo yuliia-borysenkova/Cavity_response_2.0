@@ -21,9 +21,9 @@ def parse_args():
     parser.add_argument("--pre-RHS", action="store_true", help="Compute RHS before one time derivative. Helps with accuracy in computing b(t)")
     
     parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
-    parser.add_argument("--mode-fam", choices=["TE", "TM"], help="Mode family (TE or TM)")
-    parser.add_argument("--mode-par", choices=["a", "b", None], help="Mode parameter")
-    parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated integers")
+    parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
+    parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity (even or odd)")
+    parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
     
     parser.add_argument("--L", default=0.1, help="Cavity length scale parameter")
 

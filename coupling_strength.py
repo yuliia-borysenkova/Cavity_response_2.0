@@ -14,29 +14,26 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Compute cavity-GW coupling strength η(θ,φ) for various geometries and modes.")
     
     # Geometry selection
-    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical")
+    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
     
     # Mode selection
-    parser.add_argument("--mode-fam", choices=["TM", "TE"], default="TM", help="Mode family")
-    parser.add_argument("--mode-ind", default="0,1,0", help=("Mode indices, provide as comma-separated values 'a,b,c'.\n"
-                                                                        "Cylinder: [n,p,q] with n>=0,p>=1,q>=0.\n"
-                                                                        "Sphere: [m,n,p] with m ∈ [-n, ..., n], n>=1,p>=1.\n"
-                                                                        "Rectangle: [m, n, p]"))
+    parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
+    parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
     
     # Cylindrical/Spherical cavity
-    parser.add_argument("--R", default=None, type=float, help="Cavity radius [m]")
-    parser.add_argument("--L", default=None, type=float, help="Cavity length [m]")
+    parser.add_argument("--R", type=float, default=0.1, help="Cavity radius [m]")
+    parser.add_argument("--L", type=float, default=0.2,  help="Cylindrical cavity length [m]")
 
     # Rectangular cavity
-    parser.add_argument("--a", default=None, type=float, help="Cavity length [m]")
-    parser.add_argument("--b", default=None, type=float, help="Cavity width [m]")
-    parser.add_argument("--c", default=None, type=float, help="Cavity height [m]")
+    parser.add_argument("--a", type=float, default=None, help="Rectangular cavity x-dimension length (meters)")
+    parser.add_argument("--b", type=float, default=None, help="Rectangular cavity y-dimension length (meters)")
+    parser.add_argument("--c", type=float, default=None, help="Rectangular cavity z-dimension length (meters)")
     
     # Simulation parameters
     parser.add_argument("--pol", choices=["plus", "cross"], default="cross", help="GW polarization: 'plus' or 'cross'")
     parser.add_argument("--N-theta", type=int, default=10, help="Number of theta angles to sample")
     parser.add_argument("--N-phi", type=int, default=1, help="Number of phi angles to sample")
-    parser.add_argument("--nproc", type=int, default=1)
+    parser.add_argument("--nproc", type=int, default=1, help="Number of processors for parallel execution")
     
     # Results directory
     parser.add_argument("--save-dir", type=str, default="results/coupling")

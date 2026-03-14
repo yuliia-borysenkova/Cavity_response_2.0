@@ -17,9 +17,9 @@ def parse_args():
 
     parser.add_argument("--Q", type=float, default=1e5, help="Quality factor of the cavity")
     parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
-    parser.add_argument("--mode-fam", choices=["TM", "TM"], help="Cavity mode family")
-    parser.add_argument("--mode-par", choices=["a", "b", None], help="Cavity mode to excite")
-    parser.add_argument("--mode-ind", type=str, default="0,1,0", help="Mode indices [n,p,q] as comma-separated values")
+    parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
+    parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity (even or odd)")
+    parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
 
     parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot")
 
