@@ -7,7 +7,7 @@ from tqdm import tqdm
 from scipy import integrate, interpolate, stats
 from gw.utils import load_waveform
 from rhs.utils import compute_k_pol, decompose_B
-from rhs.num_rhs_integration import compute_num_rhs, extract_mode
+from rhs.num_rhs_integration import compute_num_rhs, extract_mode, plot_3d
 from plotting.theme import new_figure, save_figure
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 
@@ -18,24 +18,14 @@ def parse_args():
     parser.add_argument("--mode-dir", type=str, default="modes/numerical", help="Directory containing the .csv mode data file")
     parser.add_argument("--results-dir", type=str, default="results", help="Path to results directory")
     parser.add_argument("--Nt", type=int, default=10000, help="Number of time samples")
-    parser.add_argument("--Ns", type=int, default=100, help="Number of spatial samples")
+    parser.add_argument("--Ns", type=int, default=100, help="Number of spatial samples") # Don't choose Ns which is too small
     
     parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot") # Left to implement
     parser.add_argument("--pre-RHS", action="store_true", help="Compute RHS before one time derivative. Helps with accuracy in computing b(t)")
 
     parser.add_argument("--mode", type=str, default="TM010_5.119GHz", help="Path to .csv mode data file")
     parser.add_argument("--f", type=float, default=5.119, help="Frequency of the mode in GHz")
-    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
     parser.add_argument("--Bz", type=float, default=14.0, help="Magnetic field strength in Tesla")
-
-    # Rectangular cavity
-    parser.add_argument("--a", type=float, default=0.1, help="Rectangular cavity x-dimension length (meters)")
-    parser.add_argument("--b", type=float, default=0.1, help="Rectangular cavity y-dimension length (meters)")
-    parser.add_argument("--c", type=float, default=0.1, help="Rectangular cavity z-dimension length (meters)")
-    
-    # Cylindrical/Spherical cavity
-    parser.add_argument("--R", type=float, default=0.04, help="Cavity radius (meters)")
-    parser.add_argument("--L", type=float, default=0.24, help="Cylindrical cavity length (meters)")
 
     parser.add_argument("--data", type=str, required=True, help="Path to .npy data file")
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of gravitational wave approach in degrees")
@@ -55,28 +45,25 @@ def main():
     data_path = os.path.join(args.data_dir, args.data + ".npy")
     mode_path = os.path.join(args.mode_dir, args.mode + ".csv")
 
+       
+    dir1_name = f"{args.mode}_theta={args.theta}_phi={args.phi}"
+    dir2_name = f"DATA_{args.data}"
+    save_dir = os.path.join(args.results_dir, dir1_name, dir2_name)
+    os.makedirs(save_dir, exist_ok=True)
+
     theta_rad = np.radians(args.theta)
     phi_rad = np.radians(args.phi)
-    omega = 2* np.pi * args.f * 1e9
+    omega = 2 * np.pi * args.f * 1e9
     
     # Decompose B
     B = np.array([0., 0., args.Bz]) # in T
     k, e1, e2 = compute_k_pol(theta_rad, phi_rad)
     B_plus, B_cross = decompose_B(B, k, e1, e2)
-
-    # Create cavity and compute volume
-    if args.geometry == "rectangular":
-        cavity = RectangularCavity(a=args.a, b=args.b, c=args.c)
-    elif args.geometry == "cylindrical":
-        cavity = CylindricalCavity(R=args.R, L=args.L)
-    elif args.geometry ==  "spherical":
-        cavity = SphericalCavity(R=args.R)
-
-    V = cavity.volume() # Eventually we might want to compute the volume integral directly from mode information
     
     # Load all lines, skip COMSOL comment lines
-    coords, Efield = extract_mode(mode_path)
-    num = len(coords) # Is this right?
+    coords, Efield, norm, V = extract_mode(mode_path)
+    num = len(coords)
+    plot_3d(coords, Efield, save_dir)
     
     xpar = np.einsum('ij,j->i', coords, k)
     t_data, hplus_dd, hcross_dd = load_waveform(data_path, derivative=2)
@@ -99,20 +86,24 @@ def main():
             overlaps[i], errors[i] = compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plus, B_cross, hplusDD, hcrossDD, ell)
         
         overlaps = np.stack(overlaps) 
-        errors = np.stack(errors)      
+        errors = np.stack(errors)
+
+        mean_errors = np.array([err[int(0.98 * len(err)):].mean() for err in errors]) # Average over the end where the values are big
         
-        mean_errors = np.array([err.mean() for err in errors])
-        
-        min_index = mean_errors.argmin()
+        min_index = mean_errors.argmin() - 1 # Do one value before minimum to make sure statistical error dominates
         min_value = mean_errors[min_index]
         ell = ell_arr[min_index]
         
-        print(f"Minimum mean error is {min_value} at index {min_index} and l={ell}")
+        print(f"[INFO] Minimum mean error is {min_value:.2f} at index {min_index} and l = {ell:2f} m")
         RHS = overlaps[min_index]
         error = errors[min_index]
     else:
         ell = args.ell
         RHS, error = compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plus, B_cross, hplusDD, hcrossDD, ell)
+
+    xpar_len = np.abs(xpar[-1] - xpar[0])
+    if ell > xpar_len / args.Ns:
+        print(f"[WARN] The errors might be underestimated, as slices are no longer independent. Consider choosing Ns < {args.Ns}")
 
     print("[INFO] RHS computed in {:.2f} s".format(time.time() - start))
 
@@ -128,13 +119,8 @@ def main():
         print("[INFO] pre_RHS computed in {:.2f} s".format(time.time() - start))
     else:
         pre_RHS = []
-
+        
     # Save RHS to save_dir
-    dir1_name = f"{args.mode}_theta={args.theta}_phi={args.phi}"
-    dir2_name = f"DATA_{args.data}"
-    save_dir = os.path.join(args.results_dir, dir1_name, dir2_name)
-    os.makedirs(save_dir, exist_ok=True)
-    
     file_name = os.path.join(save_dir, f"RHS_{args.mode}_{args.data}.npz")
     np.savez(file_name, ts=ts, RHS=RHS, pre_RHS=pre_RHS, mode=args.mode, data=args.data)
     print("[INFO] Saved RHS array file to ", file_name)
@@ -143,7 +129,7 @@ def main():
     run_info = {
         "args": vars(args),
         "omega": omega,
-        "norm": [], # Change this?
+        "norm": norm, # Change this?
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "hostname": socket.gethostname()
     }
@@ -153,7 +139,7 @@ def main():
     # Plot RHS array as a function of time
     fig, ax = new_figure()
     ax.plot(ts * 1e9, RHS, label="RHS (cylinder slicing method)")
-    ax.set_xlabel(r"$t,\,[\mathrm{ns}]$")
+    ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
     ax.set_ylabel(r"$\mathrm{RHS}(t)$")
     ax.set_title(rf"$\mathrm{{RHS}}(t)$ for {args.mode};"+f"\n waveform file: {args.data}" )
     ax.legend()
@@ -166,7 +152,7 @@ def main():
         # Plot RHS array as a function of time
         fig, ax = new_figure()
         ax.plot(ts * 1e9, pre_RHS, label="preRHS (cylinder slicing method)")
-        ax.set_xlabel(r"$t,\,[\mathrm{ns}]$")
+        ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
         ax.set_ylabel(r"$\mathrm{preRHS}(t)$")
         ax.set_title(rf"$\mathrm{{preRHS}}(t)$ for {args.mode};"+f"\n waveform file: {args.data}" )
         ax.legend()

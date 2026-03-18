@@ -26,7 +26,7 @@ def plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title=None, save_path=
     ax.set_title(title)
     ax.plot(data[0], data[1], label=labels[0])
     ax.plot(data[0], data[2], label=labels[1])
-    ax.set_xlabel(r"$t$, [s]")
+    ax.set_xlabel(r"$t$ [s]")
     ax.set_ylabel("Strain $h$")
     ax.legend()
     
