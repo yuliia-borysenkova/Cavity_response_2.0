@@ -7,7 +7,6 @@ from rhs.rhs_integration import compute_rhs_time_series
 from plotting import new_figure, save_figure
 from misc.resonant_frequency_matches import find_chirp_match_time, load_cavity_frequency_from_run_config
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, required=True, help="Path to .npy data file")
