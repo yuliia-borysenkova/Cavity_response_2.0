@@ -80,7 +80,7 @@ def main():
     if t_match is not None and args.freq_match:
         ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
 
-    ax.set_xlabel(r"$t,\,[\mathrm{ns}]$")
+    ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
     ax.set_ylabel(r"$\mathrm{RHS}(t)$")
     ax.set_title(rf"$\mathrm{{RHS}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
     ax.legend()
@@ -101,7 +101,7 @@ def main():
         if t_match is not None and args.freq_match:
             ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
 
-        ax.set_xlabel(r"$t,\,[\mathrm{ns}]$")
+        ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
         ax.set_ylabel(r"$\mathrm{preRHS}(t)$")
         ax.set_title(rf"$\mathrm{{preRHS}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
         ax.legend()
