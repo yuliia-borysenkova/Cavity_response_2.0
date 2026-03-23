@@ -8,6 +8,7 @@ from scipy import integrate, interpolate, stats
 from gw.utils import load_waveform
 from rhs.utils import compute_k_pol, decompose_B
 from rhs.num_rhs_integration import compute_num_rhs, extract_mode, plot_3d
+from misc.resonant_frequency_matches import find_chirp_match_time
 from plotting.theme import new_figure, save_figure
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 
@@ -20,7 +21,7 @@ def parse_args():
     parser.add_argument("--Nt", type=int, default=10000, help="Number of time samples")
     parser.add_argument("--Ns", type=int, default=100, help="Number of spatial samples") # Don't choose Ns which is too small
     
-    parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot") # Left to implement
+    parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot") 
     parser.add_argument("--pre-RHS", action="store_true", help="Compute RHS before one time derivative. Helps with accuracy in computing b(t)")
 
     parser.add_argument("--mode", type=str, default="TM010_5.119GHz", help="Path to .csv mode data file")
@@ -138,7 +139,14 @@ def main():
     
     # Plot RHS array as a function of time
     fig, ax = new_figure()
-    ax.plot(ts * 1e9, RHS, label="RHS (cylinder slicing method)")
+    ax.plot(ts * 1e9, RHS, label="RHS (slicing method)")
+    
+    # Add vertical line for resonant time if frequency matching is enabled
+    f_cavity = omega/(2*np.pi)
+    t_match, _ = find_chirp_match_time(ts=ts, f_cavity=omega, data_dir=args.data_dir, data_file_name=args.data)
+    if t_match is not None and args.freq_match:
+        ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
+    
     ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
     ax.set_ylabel(r"$\mathrm{RHS}(t)$")
     ax.set_title(rf"$\mathrm{{RHS}}(t)$ for {args.mode};"+f"\n waveform file: {args.data}" )
@@ -151,7 +159,14 @@ def main():
     if args.pre_RHS:
         # Plot RHS array as a function of time
         fig, ax = new_figure()
-        ax.plot(ts * 1e9, pre_RHS, label="preRHS (cylinder slicing method)")
+        ax.plot(ts * 1e9, pre_RHS, label="preRHS (slicing method)")
+        
+        # Add vertical line for resonant time if frequency matching is enabled
+        f_cavity = omega/(2*np.pi)
+        t_match, _ = find_chirp_match_time(ts=ts, f_cavity=omega, data_dir=args.data_dir, data_file_name=args.data)
+        if t_match is not None and args.freq_match:
+            ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
+        
         ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
         ax.set_ylabel(r"$\mathrm{preRHS}(t)$")
         ax.set_title(rf"$\mathrm{{preRHS}}(t)$ for {args.mode};"+f"\n waveform file: {args.data}" )

@@ -72,7 +72,7 @@ def main():
     
     # Plot RHS array as a function of time
     fig, ax = new_figure()
-    ax.plot(ts * 1e9, RHS, label="RHS (cylinder slicing method)")
+    ax.plot(ts * 1e9, RHS, label="RHS (slicing method)")
 
     # Add vertical line for resonant time if frequency matching is enabled
     f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
@@ -93,7 +93,7 @@ def main():
     if args.pre_RHS == True:
         # Plot RHS array as a function of time
         fig, ax = new_figure()
-        ax.plot(ts * 1e9, pre_RHS, label="preRHS (cylinder slicing method)")
+        ax.plot(ts * 1e9, pre_RHS, label="preRHS (slicing method)")
 
         # Add vertical line for resonant time if frequency matching is enabled
         f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
