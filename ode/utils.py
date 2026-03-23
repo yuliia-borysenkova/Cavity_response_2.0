@@ -60,6 +60,50 @@ def extend_rhs(time, RHS, factor):
 
     return new_time, new_RHS, new_RHS_fn
 
+def estimate_onset_index(RHS, ts, threshold_ratio=1e-3):
+    """
+    Estimate the onset index where RHS signal becomes significant.
+    """
+    # Method: Find where amplitude exceeds threshold
+    max_val = np.max(np.abs(RHS))
+    threshold = threshold_ratio * max_val
+    i_amp = np.argmax(np.abs(RHS) > threshold)
+
+    return i_amp
+
+def estimate_width(ts, fraction=0.03):
+    """
+    Estimate the smoothing width as a fraction of the total time span.
+    """
+    n = len(ts)
+    return int(fraction * n)
+
+def cosine_onset_window(n, i0, width):
+    w = np.ones(n)
+    w[:i0] = 0.0
+    i1 = min(i0 + width, n)
+    if i1 > i0:
+        x = np.linspace(0, np.pi, i1 - i0)
+        w[i0:i1] = 0.5 * (1 - np.cos(x))
+    return w
+
+def apply_onset_smoothing(ts, RHS, i0=None, width=None, fraction=0.03, threshold_ratio=1e-3):
+    
+    if i0 is None:
+        i0 = estimate_onset_index(RHS, ts, threshold_ratio=threshold_ratio)
+    if width is None:
+        width = estimate_width(ts, fraction=fraction)
+    
+    i0 = min(i0, len(ts) - 1)
+    window = cosine_onset_window(len(ts), i0=i0, width=width)
+    new_RHS = RHS * window
+
+    new_RHS_fn = interpolate.interp1d(
+        ts, new_RHS, kind="linear",
+        bounds_error=False, fill_value=(RHS[0], RHS[-1]))
+
+    return ts, new_RHS, new_RHS_fn
+
 def compute_b(c, cD, pre_RHS, Q, omega):
 
     b = 1/omega * (cD + c_cnst * pre_RHS) + c/Q

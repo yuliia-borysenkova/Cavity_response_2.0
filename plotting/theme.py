@@ -2,8 +2,8 @@ from pathlib import Path
 #import scienceplots
 import matplotlib.pyplot as plt
 
-#STYLE_PATH = Path(__file__).with_name("style_home.mplstyle")
-STYLE_PATH = Path(__file__).with_name("style_aps2.mplstyle")
+STYLE_PATH = Path(__file__).with_name("style_home.mplstyle")
+#STYLE_PATH = Path(__file__).with_name("style_aps2.mplstyle")
 
 def apply_style(style=None):
     if style is None:
