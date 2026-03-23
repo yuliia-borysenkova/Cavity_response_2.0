@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from misc.resonant_frequency_matches import find_chirp_match_time, load_cavity_frequency_from_run_config
 from ode.solver import solve_mode_amplitude
-from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, compute_U, load_from_config, clip_at_zero_crossing, taper_signal
+from ode.utils import load_rhs, save_amplitude, extend_rhs, compute_b, compute_U, load_from_config, clip_at_zero_crossing, taper_signal, apply_onset_smoothing
 from plotting import new_figure, save_figure
 
 def parse_args():
@@ -20,35 +20,28 @@ def parse_args():
     parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
     parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity (even or odd)")
     parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
-    parser.add_argument("--mode", type=str, default=None, help="Direct mode folder name (overrides geometry/mode settings)")
 
     parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot")
 
-    parser.add_argument("--extend", type=float, default=1.0, help="Extend the computation time to x the signal time") # Add ability to do numerical rhs
+    parser.add_argument("--extend", type=float, default=1.0, help="Extend the computation time to x the signal time")
+
+    parser.add_argument("--onset-smoothing", action="store_true", help="Applies RHS onset smoothing")
     return parser.parse_args()
 
 def main():
     args = parse_args()
+    
+    if args.mode_par is not None:
+        mode_name = args.mode_fam + args.mode_par
+    else:
+        mode_name = args.mode_fam
 
+    dir_name1 = f"{args.geometry}_{mode_name}_{args.mode_ind}_theta={args.theta}_phi={args.phi}"
     dir_name2 = f"DATA_{args.data}"
     
-    if args.mode is not None:
-        dir_name1 = f"{args.mode}_theta={args.theta}_phi={args.phi}"
-        rhs_description = f"{args.mode}"
-        mode_description = f"{args.mode}_{args.data}"
-        run_dir = os.path.join(args.results_dir, dir_name1, dir_name2)
-    else:
-        if args.mode_par is not None:
-            mode_name = args.mode_fam + args.mode_par
-        else:
-            mode_name = args.mode_fam
-        dir_name1 = f"{args.geometry}_{mode_name}_{args.mode_ind}_theta={args.theta}_phi={args.phi}"
-        rhs_description = f"${args.geometry} cavity mode {mode_name} [{args.mode_ind}]"
-        mode_description = f"{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}"
-        run_dir = os.path.join(args.results_dir, dir_name1)
-        
-    rhs_filename = f"RHS_" + mode_description + ".npz"
+    run_dir = os.path.join(args.results_dir, dir_name1)
     save_dir = os.path.join(args.results_dir, dir_name1, dir_name2)
+    rhs_filename = f"RHS_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.npz"
     rhs_path = os.path.join(save_dir, rhs_filename)
 
     omega, norm = load_from_config(run_dir)
@@ -64,6 +57,10 @@ def main():
         _, pre_RHS, pre_RHS_fn = extend_rhs(ts, pre_RHS, args.extend)
     else:
         pre_RHS = np.zeros_like(RHS)
+
+    #RHS onset smoothing
+    if args.onset_smoothing:
+        ts_ext, RHS, RHS_fn =  apply_onset_smoothing(ts_ext, RHS, fraction=0.03, threshold_ratio=1e-3)
 
     start = time.time()
 
@@ -92,22 +89,25 @@ def main():
         c_t,
         r"Mode amplitude $c(t)$",
         r"Mode amplitude $c(t)$",
-        rf"$c(t)$ for " + rhs_description + f"\n waveform file: {args.data}",
-        f"Mode_c_amplitude_"+ mode_description + ".png",
+        f"$c(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        f"\n waveform file: {args.data}",
+        f"Mode_c_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
     ),
     (
         b_t,
         r"Mode amplitude $b(t)$",
         r"Mode amplitude $b(t)$",
-        rf"$b(t)$ for " + rhs_description + f"\n waveform file: {args.data}",
-        f"Mode_b_amplitude_" + mode_description + ".png",
+        f"$b(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        f"\n waveform file: {args.data}",
+        f"Mode_b_amplitude_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
     ),
     (
         U,
         r"Energy $U(t)$",
         r"Energy $U$, [J]",
-        rf"$U(t)$ for " + rhs_description + f"\n waveform file: {args.data}",
-        f"Energy_" + mode_description + ".png",
+        f"$U(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"
+        f"\n waveform file: {args.data}",
+        f"Energy_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png",
     ),]
 
     for y, label, ylabel, title, filename in plots:
@@ -115,12 +115,12 @@ def main():
         ax.plot(ts_ext * 1e9, y, label=label)
 
         # Add vertical line for resonant time if frequency matching is enabled
-        # f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
-        # t_match, _ = find_chirp_match_time(ts=ts, f_cavity=f_cavity, data_dir=args.data_dir, data_file_name=args.data)
-        # if t_match is not None and args.freq_match:
-        #     ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
+        f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+        t_match, _ = find_chirp_match_time(ts=ts, f_cavity=f_cavity, data_dir=args.data_dir, data_file_name=args.data)
+        if t_match is not None and args.freq_match:
+            ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
 
-        ax.set_xlabel(r"$t$ [ns]")
+        ax.set_xlabel(r"$t$, [ns]")
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         ax.legend()
