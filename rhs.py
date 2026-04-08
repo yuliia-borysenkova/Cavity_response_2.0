@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity (even or odd)")
     parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
     
-    parser.add_argument("--L", default=0.1, help="Cavity length scale parameter")
+    parser.add_argument("--L", type=float, default=0.05, help="Cavity length scale parameter")
 
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of gravitational wave approach in degrees")
     parser.add_argument("--phi", type=float, default=0.0, help="Azimuthal angle of gravitational wave approach in degrees")

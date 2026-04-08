@@ -35,8 +35,8 @@ def parse_args():
     parser.add_argument("--c", type=float, default=0.1, help="Rectangular cavity z-dimension length (meters)")
     
     # Cylindrical/Spherical cavity
-    parser.add_argument("--R", type=float, default=0.04, help="Cavity radius (meters)")
-    parser.add_argument("--L", type=float, default=0.24, help="Cylindrical cavity length (meters)")
+    parser.add_argument("--R", type=float, default=0.05, help="Cavity radius (meters)")
+    parser.add_argument("--L", type=float, default=0.05, help="Cylindrical cavity length (meters)")
 
     # Results directory
     parser.add_argument("--results-dir", type=str, default="results", help="Directory to save simulation results")
