@@ -1,4 +1,5 @@
 # utils.py
+import json
 import os
 import numpy as np
 from scipy import interpolate
@@ -105,3 +106,29 @@ class CubicSplineInterp:
         )
     def __call__(self, tau):
         return self._spline(tau)
+    
+def load_characteristic_length_from_run_config(results_dir, geometry, mode_name, mode_ind, theta, phi):
+    dir_name = f"{geometry}_{mode_name}_{mode_ind}_theta={theta}_phi={phi}"
+    run_dir = os.path.join(results_dir, dir_name)
+    config_path = os.path.join(run_dir, "run_config.json")
+    print("here")
+    if os.path.exists(config_path):
+        with open(config_path, "r") as f:
+            run_info = json.load(f)
+            L = 0
+            if geometry == "rectangular":
+                a = run_info["args"].get("a", None)
+                b = run_info["args"].get("b", None)
+                c = run_info["args"].get("c", None)
+                if a is not None or b is not None or c is not None:
+                    L = max(a or 0, b or 0, c or 0)
+            elif geometry == "cylindrical":
+                L = run_info["args"].get("L", None)
+            elif geometry == "spherical":
+                R = run_info["args"].get("R", None)
+                if R is not None:
+                    L = 2 * R  # Use diameter as characteristic length for spherical cavity
+            return L   
+    else:
+        print(f"[WARNING] Run config file not found at {config_path}. Cannot load characteristic length.")
+        return None

@@ -2,7 +2,7 @@ import os, argparse, time
 import matplotlib.pyplot as plt
 import numpy as np
 from gw.utils import load_waveform
-from rhs.utils import load_slice_integrals
+from rhs.utils import load_characteristic_length_from_run_config, load_slice_integrals
 from rhs.rhs_integration import compute_rhs_time_series
 from plotting import new_figure, save_figure
 from misc.resonant_frequency_matches import find_chirp_match_time, load_cavity_frequency_from_run_config
@@ -22,8 +22,6 @@ def parse_args():
     parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
     parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity (even or odd)")
     parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
-    
-    parser.add_argument("--L", type=float, default=0.05, help="Cavity length scale parameter")
 
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of gravitational wave approach in degrees")
     parser.add_argument("--phi", type=float, default=0.0, help="Azimuthal angle of gravitational wave approach in degrees")
@@ -46,9 +44,11 @@ def main():
     x_par_arr, E_plus, E_cross = area_data
     t_data, hplus_dd, hcross_dd = load_waveform(data, derivative=2)
 
+    characteristic_length = load_characteristic_length_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+
     ts, RHS = compute_rhs_time_series(
         t_data, x_par_arr, E_plus, E_cross,
-        hplus_dd, hcross_dd, Nt=args.Nt, L=args.L,
+        hplus_dd, hcross_dd, Nt=args.Nt, L=characteristic_length,
         label="RHS"
     )
 
@@ -57,7 +57,7 @@ def main():
 
         _, pre_RHS = compute_rhs_time_series(
             t_data, x_par_arr, E_plus, E_cross,
-            hplus_d, hcross_d, Nt=args.Nt, L=args.L,
+            hplus_d, hcross_d, Nt=args.Nt, L=characteristic_length,
             label="pre_RHS"
         )
     else:
@@ -88,7 +88,6 @@ def main():
         fig,
         os.path.join(save_dir,  f"RHS(t)_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"),
     )
-
 
     if args.pre_RHS == True:
         # Plot RHS array as a function of time
