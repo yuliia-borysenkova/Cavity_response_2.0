@@ -26,8 +26,6 @@ def solve_mode_amplitude(ts, RHS_fn, omega, Q, y0=(0.0, 0.0), method="Radau", rt
     
     return {
         "t": ts,
-#        "u": u,
-#        "uD": uD,
-        "c": u,  # Convert back to physical amplitude c(t)
+        "c": u,
         "cD": uD,
     }

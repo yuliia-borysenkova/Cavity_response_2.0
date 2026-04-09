@@ -44,11 +44,11 @@ def main():
     x_par_arr, E_plus, E_cross = area_data
     t_data, hplus_dd, hcross_dd = load_waveform(data, derivative=2)
 
-    characteristic_length = load_characteristic_length_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+    L_char = load_characteristic_length_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
 
     ts, RHS = compute_rhs_time_series(
         t_data, x_par_arr, E_plus, E_cross,
-        hplus_dd, hcross_dd, Nt=args.Nt, L=characteristic_length,
+        hplus_dd, hcross_dd, Nt=args.Nt, L_char=L_char,
         label="RHS"
     )
 
@@ -57,7 +57,7 @@ def main():
 
         _, pre_RHS = compute_rhs_time_series(
             t_data, x_par_arr, E_plus, E_cross,
-            hplus_d, hcross_d, Nt=args.Nt, L=characteristic_length,
+            hplus_d, hcross_d, Nt=args.Nt, L_char=L_char,
             label="pre_RHS"
         )
     else:
