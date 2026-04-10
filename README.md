@@ -202,8 +202,9 @@ pip install -r requirements.txt
 
 ### Using conda
 ```bash
-conda create -n cavity-response python=3.10
+conda create -n cavity-response python=3.10.0
 conda activate cavity-response
+conda install -c conda-forge gsl
 pip install -r requirements.txt
 ```
 
