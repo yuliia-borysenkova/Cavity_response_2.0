@@ -87,7 +87,7 @@ class SliceIntegration:
             ax.plot(x_par_vals, area_vals)
             ax.set_xlabel(r"$x_{\parallel}\,[\mathrm{m}]$")
             ax.set_ylabel(r"$\mathbf{E}\cdot\mathbf{B}_{\times}$")
-            ax.set_title(f"Cavity mode: {self.mode.mode_name} {self.mode.indices}")
+            ax.set_title(rf"Cavity mode: {self.mode.mode_name} {self.mode.indices}; $N_s = {self.Ns}$ grid points")
             save_figure(fig, os.path.join(self.save_dir, f"slice_integrals_{pol}.png"))
 
             # Save data

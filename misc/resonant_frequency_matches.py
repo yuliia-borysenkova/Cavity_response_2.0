@@ -24,13 +24,9 @@ def load_gw_config(data_dir,data_file_name):
     with open(f"{data_dir}/{data_file_name}_config.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
-def load_run_dir(results_dir, cavity_type, mode_name, mode_ind, theta, phi):
-    """Construct run directory path."""
-    return Path(results_dir) / f"{cavity_type}_{mode_name}_{mode_ind}_theta={theta}_phi={phi}"
-
-def load_cavity_frequency_from_run_config(results_dir, cavity_type, mode_name, mode_ind, theta, phi):
+def load_cavity_frequency_from_run_config(results_dir, cavity_type, mode_name, mode_ind, theta, phi, Ns):
     """Load cavity frequency from run configuration."""
-    run_dir = load_run_dir(results_dir, cavity_type, mode_name, mode_ind, theta, phi)
+    run_dir = Path(results_dir) / f"{cavity_type}_{mode_name}_{mode_ind}_theta={theta}_phi={phi}_Ns={Ns}"
     with open(run_dir / "run_config.json", "r", encoding="utf-8") as f:
         cfg = json.load(f)
     return cfg["omega"] / (2 * np.pi)  # Convert rad/s to Hz

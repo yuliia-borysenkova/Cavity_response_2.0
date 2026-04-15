@@ -55,13 +55,13 @@ The code is split into 5 main scripts:
 5. **`rhs.py`**  
    Builds the driving term (RHS) as a function of time using the slice integrals and a chosen waveform file in `data/`.
    ```bash
-   python3 rhs.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
+   python3 rhs.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0 --freq-match
    ```
 
 7. **`ode.py`**  
    Solves the driven damped oscillator equation for the mode amplitude `c_n(t)` using an RHS file and a chosen cavity quality factor `Q`.
    ```bash
-   python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0
+   python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0 --freq-match
    ```
 
 8. **`coupling_strength.py`**  
@@ -138,6 +138,7 @@ Computes the driving term I_n(t).
 | `--data-dir` | `data` | Directory with waveform data |
 | `--results-dir` | `results` | Output directory |
 | `--Nt` | `10000` | Number of time steps |
+| `--Ns` | `100` | Number of spatial steps |
 | `--theta` | `45.0` | Polar angle of GW incidence (deg) |
 | `--phi` | `0.0` | Azimuthal angle of GW incidence (deg) |
 | `--geometry` | `cylindrical` | Geometry |
@@ -159,6 +160,7 @@ Solves the driven damped oscillator equation.
 | `--data` | *(required)* | Waveform identifier / RHS association |
 | `--theta` | `45.0` | Polar angle of GW incidence (deg) |
 | `--phi` | `0.0` | Azimuthal angle of GW incidence (deg) |
+| `--Ns` | `100` | Number of spatial steps |
 | `--Q` | `1e5` | Cavity quality factor |
 | `--geometry` | `cylindrical` | Geometry |
 | `--mode-fam` | `TM` | Mode family |
@@ -202,9 +204,20 @@ pip install -r requirements.txt
 
 ### Using conda
 ```bash
+#TODO: CLEAN-UP
 conda create -n cavity-response python=3.10.0
 conda activate cavity-response
+pip install setuptools==68.2.2
 conda install -c conda-forge gsl
+brew install pkg-config
+#LATEX LIB
+#minimal
+# brew install --cask basictex
+# sudo tlmgr install type1cm
+# sudo tlmgr install cm-super
+# sudo tlmgr install dvipng
+# sudo tlmgr install latexmk
+#GW GENERATOR CRASHES ON MAC. missing pkg_resources
 pip install -r requirements.txt
 ```
 

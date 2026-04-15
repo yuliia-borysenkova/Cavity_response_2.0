@@ -75,7 +75,7 @@ def load_slice_integrals(data, results_dir, cavity_type, mode_name, mode_ind, th
     
     data_name = os.path.splitext(os.path.basename(data))[0]
 
-    dir1_name = f"{cavity_type}_{mode_name}_{mode_ind}_theta={theta}_phi={phi}"
+    dir1_name = f"{cavity_type}_{mode_name}_{mode_ind}_theta={theta}_phi={phi}_Ns={Ns}"
     dir2_name = f"DATA_{data_name}"
     
     run_dir = os.path.join(results_dir, dir1_name)
@@ -107,8 +107,8 @@ class CubicSplineInterp:
     def __call__(self, tau):
         return self._spline(tau)
     
-def load_characteristic_length_from_run_config(results_dir, geometry, mode_name, mode_ind, theta, phi):
-    dir_name = f"{geometry}_{mode_name}_{mode_ind}_theta={theta}_phi={phi}"
+def load_characteristic_length_from_run_config(results_dir, geometry, mode_name, mode_ind, theta, phi, Ns):
+    dir_name = f"{geometry}_{mode_name}_{mode_ind}_theta={theta}_phi={phi}_Ns={Ns}"
     run_dir = os.path.join(results_dir, dir_name)
     config_path = os.path.join(run_dir, "run_config.json")
     print("here")

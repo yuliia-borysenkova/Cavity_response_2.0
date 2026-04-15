@@ -14,6 +14,7 @@ def parse_args():
 
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of gravitational wave approach in degrees")
     parser.add_argument("--phi", type=float, default=0.0, help="Azimuthal angle of gravitational wave approach in degrees")
+    parser.add_argument("--Ns", type=int, default=100, help="Number of spatial samples")
 
     parser.add_argument("--Q", type=float, default=1e5, help="Quality factor of the cavity")
     parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
@@ -35,7 +36,7 @@ def main():
     dir_name2 = f"DATA_{args.data}"
     
     if args.mode is not None:
-        dir_name1 = f"{args.mode}_theta={args.theta}_phi={args.phi}"
+        dir_name1 = f"{args.mode}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}"
         rhs_description = f"{args.mode}"
         mode_description = f"{args.mode}_{args.data}"
         run_dir = os.path.join(args.results_dir, dir_name1, dir_name2)
@@ -44,7 +45,7 @@ def main():
             mode_name = args.mode_fam + args.mode_par
         else:
             mode_name = args.mode_fam
-        dir_name1 = f"{args.geometry}_{mode_name}_{args.mode_ind}_theta={args.theta}_phi={args.phi}"
+        dir_name1 = f"{args.geometry}_{mode_name}_{args.mode_ind}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}"
         rhs_description = f"{args.geometry} cavity mode {mode_name} [{args.mode_ind}]"
         mode_description = f"{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}"
         run_dir = os.path.join(args.results_dir, dir_name1)
