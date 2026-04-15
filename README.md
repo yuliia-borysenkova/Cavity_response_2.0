@@ -49,7 +49,7 @@ The code is split into 5 main scripts:
 3. **`slice_integration.py`**  
    Computes the transverse slice integrals that couple to `+` and `×` GW polarisations for a chosen cavity geometry/mode and GW direction.
    ```bash
-   python3 slice_integration.py --mode-fam TM --mode-par b --mode-ind 0,1,0
+   python3 slice_integration.py --mode-fam TM --mode-par b --mode-ind 0,1,0 --nproc 8
    ```
 
 5. **`rhs.py`**  
