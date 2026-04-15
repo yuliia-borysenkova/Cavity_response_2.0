@@ -57,7 +57,7 @@ def main():
         mode_name = args.mode_fam
 
     # --- Prepare results directory ---
-    dir_name = f"{args.geometry}_{mode_name}_{args.mode_ind}_theta={args.theta}_phi={args.phi}"
+    dir_name = f"{args.geometry}_{mode_name}_{args.mode_ind}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}"
     save_dir = os.path.join(args.results_dir, dir_name)
     os.makedirs(save_dir, exist_ok=True)
 

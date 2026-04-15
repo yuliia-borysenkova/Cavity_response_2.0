@@ -44,7 +44,7 @@ def main():
     x_par_arr, E_plus, E_cross = area_data
     t_data, hplus_dd, hcross_dd = load_waveform(data, derivative=2)
 
-    L_char = load_characteristic_length_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+    L_char = load_characteristic_length_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi, args.Ns)
 
     ts, RHS = compute_rhs_time_series(
         t_data, x_par_arr, E_plus, E_cross,
@@ -75,7 +75,7 @@ def main():
     ax.plot(ts * 1e9, RHS, label="RHS (slicing method)")
 
     # Add vertical line for resonant time if frequency matching is enabled
-    f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+    f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi, args.Ns)
     t_match, _ = find_chirp_match_time(ts=ts, f_cavity=f_cavity, data_dir=args.data_dir, data_file_name=args.data)
     if t_match is not None and args.freq_match:
         ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
@@ -95,7 +95,7 @@ def main():
         ax.plot(ts * 1e9, pre_RHS, label="preRHS (slicing method)")
 
         # Add vertical line for resonant time if frequency matching is enabled
-        f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi)
+        f_cavity = load_cavity_frequency_from_run_config(args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi, args.Ns)
         t_match, _ = find_chirp_match_time(ts=ts, f_cavity=f_cavity, data_dir=args.data_dir, data_file_name=args.data)
         if t_match is not None and args.freq_match:
             ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
