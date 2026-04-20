@@ -4,6 +4,9 @@ from typing import List, Optional
 from gw.generator import WaveformPipeline, WaveformConfig
 from gw.utils import prepare_output_path, save_config_to_json
 import numpy as np
+from astropy import units as u
+
+AU_TO_PC = 1 / 206265  # 1 AU in parsecs
 
 def parse_arguments() -> WaveformConfig:
     parser = argparse.ArgumentParser(
@@ -35,8 +38,8 @@ def parse_arguments() -> WaveformConfig:
     parser.add_argument("--tc", type=float, default=0.0,
                         help="Time of coalescence in seconds.")
     
-    parser.add_argument("--distance", type=float, default=1e-5,
-                        help="Distance to the source in parsecs.")
+    parser.add_argument("--distance", type=float, default=AU_TO_PC,
+                    help="Distance to the source in parsecs (default: 1 AU).")
     
     parser.add_argument("--inclination", type=float, default=0.0,
                         help="Inclination angle of the binary orbit (radians).")
