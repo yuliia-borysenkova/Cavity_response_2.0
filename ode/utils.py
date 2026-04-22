@@ -284,10 +284,6 @@ def apply_onset_smoothing(
     return ts, new_RHS, new_RHS_fn
 
 
-# ---------------------------------------------------------------------------
-# Unchanged utility functions
-# ---------------------------------------------------------------------------
-
 def compute_b(c, cD, pre_RHS, Q, omega):
     b = 1/omega * (cD + c_cnst * pre_RHS) + c/Q
     return b
@@ -322,3 +318,25 @@ def taper_signal(RHS, fraction=0.05):
     x = np.linspace(0, np.pi / 2, n_taper)
     mask[-n_taper:] = np.cos(x) ** 2
     return RHS * mask
+
+def update_config_with_Q(config_file, args):
+    """
+    Load an existing combined config and add Q to cavity_info.derived.
+
+    Parameters
+    ----------
+    config_file : path to the combined JSON config (created by build_config_file)
+    args        : namespace / dict that must contain at least `Q`
+    """
+
+    # ── 1. Resolve Q ──────────────────────────────────────────────────────────
+    Q = args.Q if hasattr(args, "Q") else args["Q"]
+
+    # ── 2. Load, patch, save ──────────────────────────────────────────────────
+    with open(config_file) as f:
+        combined = json.load(f)
+
+    combined["cavity_info"]["derived"]["Q"] = Q
+
+    with open(config_file, "w") as f:
+        json.dump(combined, f, indent=4)

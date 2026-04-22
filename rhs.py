@@ -39,14 +39,6 @@ def main():
 
     data = os.path.join(args.data_dir, args.data + ".npy")
 
-    #create json files
-    gw_config_file = os.path.join(args.data_dir, args.data + "_config.json")
-    slice_integrals_config_file = os.path.join(args.results_dir, args.geometry, mode_name, f"mode_{args.mode_ind}", f"theta_{args.theta}_phi_{args.phi}_Ns_{args.Ns}", "slice_integrals_config.json")
-    build_config_file(gw_config_file, slice_integrals_config_file, args)
-
-
- 
-
     start = time.time()
 
     save_dir, area_data = load_slice_integrals(data, args.results_dir, args.geometry, mode_name, args.mode_ind, args.theta, args.phi, args.Ns)
@@ -73,6 +65,12 @@ def main():
         pre_RHS = []
 
     print(f"[INFO] Computed in {time.time()-start: .4f} s.")
+
+    #create json files
+    gw_config_file = os.path.join(args.data_dir, args.data + "_config.json")
+    slice_integrals_config_file = os.path.join(args.results_dir, args.geometry, mode_name, f"mode_{args.mode_ind}", f"theta_{args.theta}_phi_{args.phi}_Ns_{args.Ns}", "slice_integrals_config.json")
+    output_file = os.path.join(save_dir, f"RHS_config_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.json")
+    build_config_file(gw_config_file, slice_integrals_config_file, args, output_file)
         
     # Save RHS array to file
     file_name = os.path.join(save_dir, f"RHS_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.npz")

@@ -6,7 +6,7 @@ from ode.solver import solve_mode_amplitude
 from ode.utils import (
     load_rhs, save_amplitude, extend_rhs, compute_b, compute_U,
     load_from_config, clip_at_zero_crossing, taper_signal,
-    apply_onset_smoothing,
+    apply_onset_smoothing, update_config_with_Q,
 )
 from plotting import new_figure, save_figure
 
@@ -71,16 +71,7 @@ def main():
 
     ts, RHS, pre_RHS = load_rhs(rhs_path)
 
-    # ------------------------------------------------------------------ #
-    # Signal conditioning — ORDER MATTERS:                                 #
-    #   1. taper tail  (avoid Gibbs at the end)                            #
-    #   2. onset smooth on the *original* (non-extended) array             #
-    #      → onset index is meaningful on the compact signal               #
-    #   3. extend with zeros for longer ODE integration                    #
-    # ------------------------------------------------------------------ #
-
     RHS = taper_signal(RHS)
-
     if args.onset_smoothing:
         ts, RHS, _ = apply_onset_smoothing(
             ts, RHS,
@@ -127,6 +118,11 @@ def main():
     result['U'] = U
 
     print("[INFO] Magnetic mode coefficients computed.")
+
+    #editing json file to add Q
+    output_file = os.path.join(save_dir, f"RHS_config_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.json")
+    update_config_with_Q(output_file, args)
+
     save_amplitude(save_dir, result)
 
     plots = [

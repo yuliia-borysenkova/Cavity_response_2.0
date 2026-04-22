@@ -5,6 +5,9 @@ import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from scipy.constants import c as c_cnst
+import socket
+from datetime import datetime, timezone
+
 
 def compute_k_pol(theta, phi):
 
@@ -133,17 +136,55 @@ def load_characteristic_length_from_run_config(results_dir, geometry, mode_name,
         print(f"[WARNING] Run config file not found at {config_path}. Cannot load characteristic length.")
         return None
     
-def build_config_file(gw_config_file, slice_integrals_config_file, args):
 
-    #load data from both config files
+def build_config_file(gw_config_file, slice_integrals_config_file, args, output_file):
+    """
+    Merge GW signal config and slice integrals config into a single combined JSON file.
+
+    Parameters
+    ----------
+    gw_config_file              : path to the GW signal JSON config
+    slice_integrals_config_file : path to the slice integrals JSON config
+    args                        : namespace / dict that must contain at least `Nt`
+    output_file                 : destination path for the combined JSON
+    """
+
+    # ── 1. Load source files ──────────────────────────────────────────────────
     with open(gw_config_file) as f:
         gw_data = json.load(f)
+
     with open(slice_integrals_config_file) as f:
         slice_data = json.load(f)
 
-    #build combinded structure
+    # ── 2. Resolve Nt (works for both argparse Namespace and plain dict) ──────
+    Nt = args.Nt if hasattr(args, "Nt") else args["Nt"]
 
+    # ── 3. Build the combined structure ──────────────────────────────────────
+    combined = {
+        "gw_wave_data": gw_data,
 
+        "cavity_info": {
+            "args": slice_data.get("args", {}),
+            "derived": {
+                "Nt": Nt,
+            },
+            "results": {
+                "omega": slice_data.get("omega"),
+                "norm":  slice_data.get("norm"),
+            },
+        },
 
+        "system_info": {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "hostname":  socket.gethostname(),
+        },
+    }
 
-    return;
+    # ── 4. Write output (create parent directories if needed) ─────────────────
+    os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
+
+    with open(output_file, "w") as f:
+        json.dump(combined, f, indent=4)
+
+    print(f"Combined config written to: {output_file}")
+    return combined
