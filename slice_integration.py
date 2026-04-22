@@ -79,7 +79,7 @@ def main():
     mode = mode_class(indices=mode_ind, mode_name=mode_name, cavity=cavity)
     mode.normalize()
 
-        # Save run config
+    # Save run config
     run_info = {
         "args": vars(args),
         "omega": mode.omega(),

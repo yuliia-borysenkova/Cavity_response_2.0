@@ -132,3 +132,18 @@ def load_characteristic_length_from_run_config(results_dir, geometry, mode_name,
     else:
         print(f"[WARNING] Run config file not found at {config_path}. Cannot load characteristic length.")
         return None
+    
+def build_config_file(gw_config_file, slice_integrals_config_file, args):
+
+    #load data from both config files
+    with open(gw_config_file) as f:
+        gw_data = json.load(f)
+    with open(slice_integrals_config_file) as f:
+        slice_data = json.load(f)
+
+    #build combinded structure
+
+
+
+
+    return;

@@ -1,8 +1,9 @@
+import json
 import os, argparse, time
 import matplotlib.pyplot as plt
 import numpy as np
 from gw.utils import load_waveform
-from rhs.utils import load_characteristic_length_from_run_config, load_slice_integrals
+from rhs.utils import load_characteristic_length_from_run_config, load_slice_integrals, build_config_file
 from rhs.rhs_integration import compute_rhs_time_series
 from plotting import new_figure, save_figure
 from misc.resonant_frequency_matches import find_chirp_match_time, load_cavity_frequency_from_run_config
@@ -37,6 +38,14 @@ def main():
         mode_name = args.mode_fam
 
     data = os.path.join(args.data_dir, args.data + ".npy")
+
+    #create json files
+    gw_config_file = os.path.join(args.data_dir, args.data + "_config.json")
+    slice_integrals_config_file = os.path.join(args.results_dir, args.geometry, mode_name, f"mode_{args.mode_ind}", f"theta_{args.theta}_phi_{args.phi}_Ns_{args.Ns}", "slice_integrals_config.json")
+    build_config_file(gw_config_file, slice_integrals_config_file, args)
+
+
+ 
 
     start = time.time()
 
