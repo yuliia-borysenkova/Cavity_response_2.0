@@ -120,7 +120,7 @@ def main():
     print("[INFO] Magnetic mode coefficients computed.")
 
     #editing json file to add Q
-    output_file = os.path.join(save_dir, f"RHS_config_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.json")
+    output_file = os.path.join(save_dir, f"config_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.json")
     update_config_with_Q(output_file, args)
 
     save_amplitude(save_dir, result)

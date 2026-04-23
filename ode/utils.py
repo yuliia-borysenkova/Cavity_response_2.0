@@ -336,7 +336,7 @@ def update_config_with_Q(config_file, args):
     with open(config_file) as f:
         combined = json.load(f)
 
-    combined["cavity_info"]["derived"]["Q"] = Q
+    combined["cavity_info"]["parameters"]["Q"] = Q
 
     with open(config_file, "w") as f:
         json.dump(combined, f, indent=4)

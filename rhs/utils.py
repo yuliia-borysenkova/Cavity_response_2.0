@@ -149,26 +149,23 @@ def build_config_file(gw_config_file, slice_integrals_config_file, args, output_
     output_file                 : destination path for the combined JSON
     """
 
-    # ── 1. Load source files ──────────────────────────────────────────────────
     with open(gw_config_file) as f:
         gw_data = json.load(f)
 
     with open(slice_integrals_config_file) as f:
         slice_data = json.load(f)
 
-    # ── 2. Resolve Nt (works for both argparse Namespace and plain dict) ──────
     Nt = args.Nt if hasattr(args, "Nt") else args["Nt"]
 
-    # ── 3. Build the combined structure ──────────────────────────────────────
     combined = {
-        "gw_wave_data": gw_data,
+        "gw_data": gw_data,
 
         "cavity_info": {
-            "args": slice_data.get("args", {}),
-            "derived": {
+            "parameters": {
+                **slice_data.get("args", {}),
                 "Nt": Nt,
             },
-            "results": {
+            "computed": {
                 "omega": slice_data.get("omega"),
                 "norm":  slice_data.get("norm"),
             },
@@ -180,7 +177,6 @@ def build_config_file(gw_config_file, slice_integrals_config_file, args, output_
         },
     }
 
-    # ── 4. Write output (create parent directories if needed) ─────────────────
     os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
 
     with open(output_file, "w") as f:

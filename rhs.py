@@ -68,8 +68,8 @@ def main():
 
     #create json files
     gw_config_file = os.path.join(args.data_dir, args.data + "_config.json")
-    slice_integrals_config_file = os.path.join(args.results_dir, args.geometry, mode_name, f"mode_{args.mode_ind}", f"theta_{args.theta}_phi_{args.phi}_Ns_{args.Ns}", "slice_integrals_config.json")
-    output_file = os.path.join(save_dir, f"RHS_config_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.json")
+    slice_integrals_config_file = os.path.join(args.results_dir, f"{args.geometry}_{mode_name}_{args.mode_ind}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}", "run_config.json")
+    output_file = os.path.join(save_dir, f"config_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.json")
     build_config_file(gw_config_file, slice_integrals_config_file, args, output_file)
         
     # Save RHS array to file
@@ -91,10 +91,7 @@ def main():
     ax.set_ylabel(r"$\mathrm{RHS}(t)$")
     ax.set_title(rf"$\mathrm{{RHS}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
     ax.legend()
-    save_figure(
-        fig,
-        os.path.join(save_dir,  f"RHS(t)_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"),
-    )
+    save_figure(fig, os.path.join(save_dir,  f"RHS(t).png"))
 
     if args.pre_RHS == True:
         # Plot RHS array as a function of time
@@ -111,10 +108,7 @@ def main():
         ax.set_ylabel(r"$\mathrm{preRHS}(t)$")
         ax.set_title(rf"$\mathrm{{preRHS}}(t)$ for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
         ax.legend()
-        save_figure(
-            fig,
-            os.path.join(save_dir,  f"pre_RHS(t)_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.png"),
-        )
+        save_figure(fig, os.path.join(save_dir,  f"pre_RHS(t).png"))
 
 
 if __name__ == "__main__":
