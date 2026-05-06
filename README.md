@@ -1,4 +1,8 @@
-<img src="logos/logo_simple_CGPT.png" alt="CHASM_logo" width="200">
+<div align="center">
+  <img src="logos/logo_simple_CGPT.png" alt="CHASM_logo" width="200">
+  <h1>Project Name</h1>
+  <p>A short, punchy description of what this does.</p>
+</div>
 
 # CHASM --- Cavity Response Simulator
 
