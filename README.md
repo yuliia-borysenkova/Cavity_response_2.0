@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="logos/logo_simple_CGPT.png" alt="CHASM logo" width="300">
+  <img src="logos/logo_simple_CGPT_cut.jpeg" alt="CHASM logo" width="300">
   <h1>CHASM — Cavity Response Simulator</h1>
 </div>
 
