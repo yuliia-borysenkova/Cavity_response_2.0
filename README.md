@@ -217,13 +217,13 @@ conda install -c conda-forge gsl pkg-config
 # 4. Install Python dependencies
 pip install -r requirements.txt
 
-#Optional: Minimal setup if making plots in LaTeX style:
+# Optional: Minimal setup if making plots in LaTeX style:
 
-#MacOs
+# macOS (requires Homebrew)
 brew install --cask basictex
 sudo tlmgr install type1cm cm-super dvipng latexmk
 
-#WSL (Ubuntu)
+# WSL (Ubuntu)
 sudo apt update
 sudo apt install texlive-latex-base texlive-fonts-recommended dvipng latexmk
 ```
