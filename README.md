@@ -1,4 +1,4 @@
-![CHASM_logo](logos/logo_simple_CGPT.png)
+<img src="logos/logo_simple_CGPT.png" alt="CHASM_logo" width="200">
 
 # CHASM --- Cavity Response Simulator
 
