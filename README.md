@@ -111,10 +111,10 @@ Computes transverse kernels A_plus and A_cross.
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `--geometry` | `cylindrical` | Geometry (`cylindrical`, `spherical`, `rectangular`) |
-| `--mode-fam` | `TM` | `TE` or `TM` |
-| `--mode-par` | `b` | `a`, `b`, or `None` |
-| `--mode-ind` | `0,1,0` | Mode indices |
+| `--geometry` | `cylindrical` | Cavity geometry  (`rectangular`, `cylindrical`, `spherical`) |
+| `--mode-fam` | `TM` | Mode family (`TM`, `TE`) |
+| `--mode-par` | `b` | Mode parity (`a`, `b`, or `None`) |
+| `--mode-ind` | `0,1,0` | Mode indices (comma-separated) |
 | `--Bz` | `14.0` | Background magnetic field (T) |
 | `--Ns` | `100` | Number of spatial steps |
 | `--nproc` | `1` | Parallel processes |
@@ -141,13 +141,12 @@ Computes the driving term I_n(t).
 | `--Ns` | `100` | Number of spatial steps |
 | `--theta` | `45.0` | Polar angle of GW incidence (deg) |
 | `--phi` | `0.0` | Azimuthal angle of GW incidence (deg) |
-| `--geometry` | `cylindrical` | Geometry |
-| `--mode-fam` | `TM` | `TE` or `TM` |
-| `--mode-par` | `b` | `a`, `b`, or `None` |
-| `--mode-ind` | `0,1,0` | Mode indices |
-| `--L` | `0.1` | Characteristic cavity length (m) |
-| `--freq-match` | `False` | Match GW frequency to cavity resonant frequency |
-
+| `--geometry` | `cylindrical` | Cavity geometry  (`rectangular`, `cylindrical`, `spherical`) |
+| `--mode-fam` | `TM` | Mode family (`TM`, `TE`) |
+| `--mode-par` | `b` | Mode parity (`a`, `b`, or `None`) |
+| `--mode-ind` | `0,1,0` | Mode indices (comma-separated) |
+| `--pre-RHS` | `False` | Match GW frequency to cavity resonant frequency and plot it |
+| `--freq-match` | `False` | Compute RHS before one time derivative. Helps with accuracy in computing b(t) |
 ------------------------------------------------------------------------
 
 ## ode.py
@@ -156,16 +155,22 @@ Solves the driven damped oscillator equation.
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `--results-dir` | `results` | Output directory |
 | `--data` | *(required)* | Waveform identifier / RHS association |
+| `--data-dir` | `data` | Directory with waveform data |
+| `--results-dir` | `results` | Output directory |
 | `--theta` | `45.0` | Polar angle of GW incidence (deg) |
 | `--phi` | `0.0` | Azimuthal angle of GW incidence (deg) |
 | `--Ns` | `100` | Number of spatial steps |
 | `--Q` | `1e5` | Cavity quality factor |
-| `--geometry` | `cylindrical` | Geometry |
-| `--mode-fam` | `TM` | Mode family |
-| `--mode-par` | `b` | `a`, `b`, or `None` |
-| `--mode-ind` | `0,1,0` | Mode indices |
+| `--geometry` | `cylindrical` | Cavity geometry  (`rectangular`, `cylindrical`, `spherical`) |
+| `--mode-fam` | `TM` | Mode family (`TM`, `TE`) |
+| `--mode-par` | `b` | Mode parity (`a`, `b`, or `None`) |
+| `--mode-ind` | `0,1,0` | Mode indices (comma-separated) |
+| `--mode` | `None` | Full mode string (optional) |
+| `--freq-match` | `False` | Match GW frequency to cavity resonant frequency and plot it |
+| `--extend` | `1.0` | Factor by which to extend the simulation time window |
+| `--onset-smoothing` | `False` | Apply a smooth onset ramp to RHS before ODE solve |
+| `--onset-n-periods` | `5` | Number of oscillation periods for the onset ramp |
 ------------------------------------------------------------------------
 
 ## coupling_strength.py
@@ -188,8 +193,6 @@ Computes direction-dependent coupling C_gw(θ, φ).
 | `--nproc` | `1` | Parallel processes |
 | `--save-dir` | `results/coupling` | Output directory |
 | `--freq-match` | `False` | Match GW frequency to cavity resonant frequency |
-
-
 ------------------------------------------------------------------------
 
 # The library installation procedure
