@@ -32,13 +32,9 @@ def parse_args():
     parser.add_argument("--onset-smoothing", action="store_true",
                         help="Apply smooth onset ramp to RHS before ODE solve.")
 
-    # Fine-grained onset control (both optional; auto-estimated when absent)
-    parser.add_argument("--onset-threshold", type=float, default=1e-3,
-                        help="Fraction of peak RHS used to detect signal onset (default 1e-3).")
-    parser.add_argument("--onset-i0",    type=int, default=None,
-                        help="Override onset index (samples). Auto-detected when absent.")
-    parser.add_argument("--onset-width", type=int, default=None,
-                        help="Override ramp width (samples). Auto-estimated when absent.")
+    #Onset smoothing parameters
+    parser.add_argument("--onset-n-periods", type=int, default=5,
+                        help="Number of oscillation periods for onset ramp (default 5).")
 
     return parser.parse_args()
 
@@ -73,13 +69,9 @@ def main():
 
     RHS = taper_signal(RHS)
     if args.onset_smoothing:
-        ts, RHS, _ = apply_onset_smoothing(
+        ts, RHS, RHS_fn = apply_onset_smoothing(
             ts, RHS,
-            i0=args.onset_i0,
-            width=args.onset_width,
-            threshold_ratio=args.onset_threshold,
-            omega_cavity=omega,       # physics-informed ramp width
-            verbose=True,
+            n_periods = args.onset_n_periods
         )
 
     ts_ext, RHS, RHS_fn = extend_rhs(ts, RHS, args.extend)
@@ -88,15 +80,29 @@ def main():
         if args.onset_smoothing:
             ts, pre_RHS, _ = apply_onset_smoothing(
                 ts, pre_RHS,
-                i0=args.onset_i0,
-                width=args.onset_width,
-                threshold_ratio=args.onset_threshold,
-                omega_cavity=omega,
-                verbose=False,
+                n_periods = args.onset_n_periods
             )
         _, pre_RHS, pre_RHS_fn = extend_rhs(ts, pre_RHS, args.extend)
     else:
         pre_RHS = np.zeros_like(RHS)
+
+    #Plot RHS after filters
+    fig, ax = new_figure()
+    ax.plot(ts_ext * 1e9, RHS, label="RHS", linewidth=1.5)
+    ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
+    ax.set_ylabel(r"$\mathrm{RHS}(t)$")
+    ax.set_title(rf"$\mathrm{{RHS}}(t)$ after filters for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
+    ax.legend()
+    save_figure(fig, os.path.join(save_dir, f"RHS(t)_filtered.png"))
+
+    #Plot preRHS after filters
+    fig, ax = new_figure()
+    ax.plot(ts_ext * 1e9, pre_RHS, label="pre_RHS", linewidth=1.5)
+    ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
+    ax.set_ylabel(r"$\mathrm{preRHS}(t)$")
+    ax.set_title(rf"$\mathrm{{preRHS}}(t)$ after filters for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
+    ax.legend()
+    save_figure(fig, os.path.join(save_dir, f"pre_RHS(t)_filtered.png"))
 
     # ------------------------------------------------------------------ #
 
