@@ -204,20 +204,26 @@ pip install -r requirements.txt
 
 ### Using conda
 ```bash
-#TODO: CLEAN-UP
-conda create -n cavity-response python=3.10.0
+# 1. Create and activate the environment
+conda create -n cavity-response python=3.10
 conda activate cavity-response
-pip install setuptools==68.2.2
-conda install -c conda-forge gsl
-brew install pkg-config
-#LATEX LIB
-#minimal
-# brew install --cask basictex
-# sudo tlmgr install type1cm
-# sudo tlmgr install cm-super
-# sudo tlmgr install dvipng
-# sudo tlmgr install latexmk
-#GW GENERATOR CRASHES ON MAC. missing pkg_resources
-pip install -r requirements.txt
-```
 
+# 2. Install core Python build dependency (fixes pkg_resources issues)
+pip install setuptools==68.2.2
+
+# 3. Install system dependencies
+conda install -c conda-forge gsl pkg-config
+
+# 4. Install Python dependencies
+pip install -r requirements.txt
+
+#Optional: Minimal setup if making plots in LaTeX style:
+
+#MacOs
+brew install --cask basictex
+sudo tlmgr install type1cm cm-super dvipng latexmk
+
+#WSL (Ubuntu)
+sudo apt update
+sudo apt install texlive-latex-base texlive-fonts-recommended dvipng latexmk
+```
