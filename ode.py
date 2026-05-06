@@ -12,23 +12,24 @@ from plotting import new_figure, save_figure
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--results-dir", type=str, default="results")
-    parser.add_argument("--data", type=str, required=True)
-    parser.add_argument("--data-dir", type=str, default="data")
+    parser.add_argument("--data", type=str, required=True, help="Name of the .npy data file (without extension)")
+    parser.add_argument("--data-dir", type=str, default="data", help="Directory containing the .npy data file and its config")
+    parser.add_argument("--results-dir", type=str, default="results", help="Path to results directory")
 
-    parser.add_argument("--theta", type=float, default=45.0)
-    parser.add_argument("--phi",   type=float, default=0.0)
-    parser.add_argument("--Ns",    type=int,   default=100)
+    parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of GW incidence (deg)")
+    parser.add_argument("--phi",   type=float, default=0.0, help="Azimuthal angle of GW incidence (deg) ")
+    parser.add_argument("--Ns",    type=int,   default=100, help="Number of spatial steps")
 
-    parser.add_argument("--Q",        type=float, default=1e5)
-    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical")
-    parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM")
-    parser.add_argument("--mode-par", choices=["a", "b", None], default="b")
-    parser.add_argument("--mode-ind", default="0,1,0")
-    parser.add_argument("--mode",     type=str, default=None)
+    parser.add_argument("--Q",        type=float, default=1e5, help="Quality factor of the cavity mode")
+    parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
+    parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
+    parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity: 'a' for even, 'b' for odd, None for no parity")
+    parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values, e.g. '0,1,0'")
+    parser.add_argument("--mode",     type=str, default=None, help="Optional mode name for backward compatibility with old config structure. If provided, overrides geometry/mode-fam/mode-par/mode-ind arguments.")
 
-    parser.add_argument("--freq-match",      action="store_true")
-    parser.add_argument("--extend",          type=float, default=1.0)
+    parser.add_argument("--freq-match", action="store_true", help="Match GW frequency to cavity resonant frequency and indicate it on the plot")
+
+    parser.add_argument("--extend",          type=float, default=1.0, help="Extend RHS time series by this factor (default 1.0, i.e. no extension).")
     parser.add_argument("--onset-smoothing", action="store_true",
                         help="Apply smooth onset ramp to RHS before ODE solve.")
 
