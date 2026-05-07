@@ -103,7 +103,7 @@ Generates PBH merger waveforms using PyCBC, PySEOBNR and gwmemory.
 
 ## slice_integration.py
 
-Computes transverse kernels A_plus and A_cross.
+Computes transverse kernels $A_+$ and $A_\times$.
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
@@ -126,7 +126,7 @@ Computes transverse kernels A_plus and A_cross.
 
 ## rhs.py
 
-Computes the driving term I_n(t).
+Computes the driving term $I_n(t)$.
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
@@ -171,7 +171,7 @@ Solves the driven damped oscillator equation.
 
 ## coupling_strength.py
 
-Computes direction-dependent coupling C_gw(θ, φ).
+Computes direction-dependent coupling $C_{gw}(\theta, \phi)$.
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
