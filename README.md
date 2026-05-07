@@ -56,7 +56,7 @@ The code is split into 5 main scripts:
    ```
 
 7. **`ode.py`**  
-   Solves the driven damped oscillator equation for the mode amplitude `c_n(t)` using an RHS file and a chosen cavity quality factor `Q`.
+   Solves the driven damped oscillator equation for the mode amplitude $c_n(t)$ using an RHS file and a chosen cavity quality factor `Q`.
    ```bash
    python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0 --freq-match --extend 2 --onset-smoothing
    ```
