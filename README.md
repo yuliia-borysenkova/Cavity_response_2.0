@@ -28,7 +28,7 @@ $$
 \int dx_\parallel\, A_\times(x_\parallel)\,\partial_t^2 h_\times(t-x_\parallel/c)
 $$
 
-The transverse kernels $$ A_{+,\times}(x_\parallel) $$ are precomputed to reduce the original 3D integral to a 1D convolution,
+The transverse kernels $ A_{+,\times}(x_\parallel) $ are precomputed to reduce the original 3D integral to a 1D convolution,
 dramatically improving numerical performance.
 
 ------------------------------------------------------------------------
