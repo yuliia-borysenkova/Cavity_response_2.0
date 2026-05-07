@@ -28,13 +28,7 @@ $$
 \int dx_\parallel\, A_\times(x_\parallel)\,\partial_t^2 h_\times(t-x_\parallel/c)
 $$
 
-The transverse kernels
-
-$$
-A_{+,\times}(x_\parallel)
-$$
-
-are precomputed to reduce the original 3D integral to a 1D convolution,
+The transverse kernels $$ A_{+,\times}(x_\parallel) $$ are precomputed to reduce the original 3D integral to a 1D convolution,
 dramatically improving numerical performance.
 
 ------------------------------------------------------------------------
@@ -58,13 +52,13 @@ The code is split into 5 main scripts:
 5. **`rhs.py`**  
    Builds the driving term (RHS) as a function of time using the slice integrals and a chosen waveform file in `data/`.
    ```bash
-   python3 rhs.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0 --freq-match
+   python3 rhs.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0 --freq-match --pre-RHS
    ```
 
 7. **`ode.py`**  
    Solves the driven damped oscillator equation for the mode amplitude `c_n(t)` using an RHS file and a chosen cavity quality factor `Q`.
    ```bash
-   python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0 --freq-match
+   python3 ode.py --data GW_xxx --mode-fam TM --mode-par b --mode-ind 0,1,0 --freq-match --extend 2 --onset-smoothing
    ```
 
 8. **`coupling_strength.py`**  
@@ -105,7 +99,6 @@ Generates PBH merger waveforms using PyCBC, PySEOBNR and gwmemory.
 | `--plot` | `False` | Plot waveform generation stages |
 | `--data-dir` | `data` | Output directory for waveforms |
 | `--output` | *(auto)* | Output filename |
-
 ------------------------------------------------------------------------
 
 ## slice_integration.py
