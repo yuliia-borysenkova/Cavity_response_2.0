@@ -21,8 +21,8 @@ def parse_args():
     parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
     
     # Cylindrical/Spherical cavity
-    parser.add_argument("--R", type=float, default=0.1, help="Cavity radius [m]")
-    parser.add_argument("--L", type=float, default=0.2,  help="Cylindrical cavity length [m]")
+    parser.add_argument("--R", type=float, default=0.05, help="Cavity radius [m]")
+    parser.add_argument("--L", type=float, default=0.05,  help="Cylindrical cavity length [m]")
 
     # Rectangular cavity
     parser.add_argument("--a", type=float, default=None, help="Rectangular cavity x-dimension length (meters)")
