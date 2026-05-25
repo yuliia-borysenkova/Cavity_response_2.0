@@ -143,6 +143,64 @@ def taper_signal(RHS, fraction=0.05):
     mask[-n_taper:] = np.cos(x) ** 2
     return RHS * mask
 
+# ODE solving utilities
+
+def analytical_free_decay(result, ts_ext, omega, Q):
+    """
+    Extend ODE solution analytically over the zero-forcing tail.
+    Returns result dict with c, cD, t stitched over full ts_ext.
+    """
+    ts  = result['t']
+    t0  = ts[-1]
+    c0  = result['c'][-1]
+    cD0 = result['cD'][-1]
+
+    alpha   = omega / (2.0 * Q)
+    omega_d = omega * np.sqrt(1.0 - 1.0 / (4.0 * Q**2))
+
+    A_n = c0
+    B_n = (cD0 + alpha * c0) / omega_d
+
+    tau = ts_ext[len(ts):] - t0
+
+    c_tail  = np.exp(-alpha * tau) * (
+        A_n * np.cos(omega_d * tau) + B_n * np.sin(omega_d * tau)
+    )
+    cD_tail = np.exp(-alpha * tau) * (
+        (-alpha * A_n + omega_d * B_n) * np.cos(omega_d * tau) +
+        (-alpha * B_n - omega_d * A_n) * np.sin(omega_d * tau)
+    )
+
+    return {
+        **result,
+        "t":       ts_ext,
+        "c":       np.concatenate([result['c'],  c_tail]),
+        "cD":      np.concatenate([result['cD'], cD_tail]),
+        "A_n":     A_n,       # <-- exposed for Fourier
+        "B_n":     B_n,
+        "alpha":   alpha,
+        "omega_d": omega_d,
+        "t0":      t0,
+    }
+
+#Furier transform utilities
+def compute_full_fourier(result, ts_ext, n_driven):
+    dt    = ts_ext[1] - ts_ext[0]
+    n     = len(ts_ext)
+    freqs = np.fft.rfftfreq(n, d=dt) * 2 * np.pi
+
+    # driven part: zero-padded FFT
+    c_padded            = np.zeros(n, dtype=result['c'].dtype)
+    c_padded[:n_driven] = result['c'][:n_driven]
+    c_hat_num           = np.fft.rfft(c_padded) * dt
+
+    # free-decay tail: analytical
+    s         = result['alpha'] + 1j * freqs
+    c_hat_ana = np.exp(-1j * freqs * result['t0']) * \
+                (result['A_n'] * s + result['B_n'] * result['omega_d']) / \
+                (s**2 + result['omega_d']**2)
+
+    return freqs, c_hat_num, c_hat_ana, c_hat_num + c_hat_ana
 
 # ODE solution post-processing utilities
 
@@ -153,4 +211,3 @@ def compute_b(c, cD, pre_RHS, Q, omega):
 def compute_U(c, b):
     U = 1/2 * epsilon_0 * (c**2 + b**2)
     return U
- 
