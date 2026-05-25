@@ -50,6 +50,7 @@ Thumbs.db
 #Directories to ignore
 results/
 tests/
+data/
 
 # allow repository logos
 !logos/
