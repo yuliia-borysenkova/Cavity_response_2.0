@@ -122,26 +122,6 @@ def extend_rhs(time, RHS, factor):
     )
 
     return new_time, new_RHS, new_RHS_fn
-   
-def clip_at_zero_crossing(t, c):
-    crossings = np.where(np.diff(np.sign(c)) != 0)[0]
-    if len(crossings) < 2:
-        raise ValueError("Less than two zero crossings found")
-    i = crossings[1] + 1
-    return t[i:], c[i:]
-
-def taper_signal(RHS, fraction=0.05):
-    RHS = np.asarray(RHS)
-    N = len(RHS)
-    n_taper = max(2, int(fraction * N))
-
-    if n_taper >= N:
-        raise ValueError("n_taper must be smaller than signal length")
-
-    mask = np.ones(N)
-    x = np.linspace(0, np.pi / 2, n_taper)
-    mask[-n_taper:] = np.cos(x) ** 2
-    return RHS * mask
 
 # ODE solving utilities
 
@@ -187,12 +167,12 @@ def analytical_free_decay(result, ts_ext, omega, Q):
 def compute_full_fourier(result, ts_ext, n_driven):
     dt    = ts_ext[1] - ts_ext[0]
     n     = len(ts_ext)
-    freqs = np.fft.rfftfreq(n, d=dt) * 2 * np.pi
+    freqs = np.fft.fftfreq(n, d=dt) * 2 * np.pi
 
     # driven part: zero-padded FFT
     c_padded            = np.zeros(n, dtype=result['c'].dtype)
     c_padded[:n_driven] = result['c'][:n_driven]
-    c_hat_num           = np.fft.rfft(c_padded) * dt
+    c_hat_num           = np.fft.fft(c_padded) * dt * np.exp(-1j*freqs*ts_ext[0])
 
     # free-decay tail: analytical
     s         = result['alpha'] + 1j * freqs

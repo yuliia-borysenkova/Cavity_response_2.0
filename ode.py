@@ -5,7 +5,7 @@ from misc.resonant_frequency_matches import find_chirp_match_time
 from ode.solver import solve_mode_amplitude
 from ode.utils import (
     load_rhs, save_amplitude, extend_rhs, compute_b, compute_U,
-    load_from_config, clip_at_zero_crossing, taper_signal,
+    load_from_config,
     apply_onset_smoothing, update_config_with_Q, analytical_free_decay, compute_full_fourier,
 )
 from plotting import new_figure, save_figure
@@ -34,7 +34,7 @@ def parse_args():
                         help="Apply smooth onset ramp to RHS before ODE solve.")
 
     #Onset smoothing parameters
-    parser.add_argument("--onset-n-periods", type=int, default=5,
+    parser.add_argument("--onset-n-periods", type=int, default=3,
                         help="Number of oscillation periods for onset ramp (default 5).")
 
     return parser.parse_args()
@@ -68,7 +68,6 @@ def main():
 
     ts, RHS, pre_RHS = load_rhs(rhs_path)
 
-    RHS = taper_signal(RHS)
     if args.onset_smoothing:
         ts, RHS, RHS_fn = apply_onset_smoothing(
             ts, RHS,
@@ -89,7 +88,7 @@ def main():
 
     #Plot RHS after filters
     fig, ax = new_figure()
-    ax.plot(ts_ext * 1e9, RHS, label="RHS", linewidth=1.5)
+    ax.plot(ts * 1e9, RHS[:len(ts)], label="RHS", linewidth=1.5)
     ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
     ax.set_ylabel(r"$\mathrm{RHS}(t)$")
     ax.set_title(rf"$\mathrm{{RHS}}(t)$ after filters for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
@@ -98,7 +97,7 @@ def main():
 
     #Plot preRHS after filters
     fig, ax = new_figure()
-    ax.plot(ts_ext * 1e9, pre_RHS, label="pre_RHS", linewidth=1.5)
+    ax.plot(ts * 1e9, pre_RHS[:len(ts)], label="pre_RHS", linewidth=1.5)
     ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
     ax.set_ylabel(r"$\mathrm{preRHS}(t)$")
     ax.set_title(rf"$\mathrm{{preRHS}}(t)$ after filters for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )

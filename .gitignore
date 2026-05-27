@@ -18,10 +18,11 @@ env/
 .DS_Store
 Thumbs.db
 
-# IDE / notebooks
+# IDE / notebooks / bash
 .ipynb_checkpoints/
 .vscode/
 .idea/
+.sh/
 
 # Compiled C/C++ extensions
 *.so
