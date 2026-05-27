@@ -85,7 +85,7 @@ Generates PBH merger waveforms using PyCBC, PySEOBNR and gwmemory.
 | `--eccentricity` | `0.0` | Orbital eccentricity |
 | `--low_freq` | `1e8` | Lower frequency bound (Hz) |
 | `--high_freq` | `1e11` | Upper frequency bound (Hz) |
-| `--distance` | `1e-5` | Distance to source (pc) |
+| `--distance` | `4.84813e-6` | Distance to source (pc) |
 | `--inclination` | `0.0` | Inclination angle (rad) |
 | `--polarization-angle` | `0.0` | Polarization angle (rad) |
 | `--phi0` | `0.0` | Initial orbital phase (rad) |
