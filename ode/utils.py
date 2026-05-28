@@ -5,6 +5,7 @@ from modes import CylindricalMode, SphericalMode, RectangularMode
 from scipy import interpolate
 from scipy.constants import c as c_cnst
 from scipy.constants import epsilon_0
+from scipy.signal.windows import tukey
 
 #Files loading/saving utilities
 
@@ -164,21 +165,27 @@ def analytical_free_decay(result, ts_ext, omega, Q):
     }
 
 #Furier transform utilities
-def compute_full_fourier(result, ts_ext, n_driven):
+def compute_full_fourier(result, ts_ext, n_driven, tukey_alpha=0.1):
+
     dt    = ts_ext[1] - ts_ext[0]
     n     = len(ts_ext)
-    freqs = np.fft.fftfreq(n, d=dt) * 2 * np.pi
+    omegas = np.fft.fftfreq(n, d=dt) * 2 * np.pi
 
     # driven part: zero-padded FFT
-    c_padded            = np.zeros(n, dtype=result['c'].dtype)
-    c_padded[:n_driven] = result['c'][:n_driven]
-    c_hat_num           = np.fft.fft(c_padded) * dt * np.exp(-1j*freqs*ts_ext[0])
+    # Tukey window applied only to driven segment, right edge only
+    c_padded = np.zeros(n, dtype=result['c'].dtype)
+    window   = tukey(n_driven, alpha=tukey_alpha)
+    window[:n_driven//2] = 1.0                      # flatten left half — signal starts smoothly
+    c_padded[:n_driven]  = result['c'][:n_driven] * window
+    c_hat_num            = np.fft.fft(c_padded) * dt * np.exp(-1j*freqs*ts_ext[0])
 
-    # free-decay tail: analytical
-    s         = result['alpha'] + 1j * freqs
-    c_hat_ana = np.exp(-1j * freqs * result['t0']) * \
+    # free-decay tail: analytical (no windowing needed)
+    s         = result['alpha'] + 1j * omegas
+    c_hat_ana = np.exp(-1j * omegas * result['t0']) * \
                 (result['A_n'] * s + result['B_n'] * result['omega_d']) / \
                 (s**2 + result['omega_d']**2)
+    
+    freqs = omegas / (2 * np.pi)
 
     return freqs, c_hat_num, c_hat_ana, c_hat_num + c_hat_ana
 

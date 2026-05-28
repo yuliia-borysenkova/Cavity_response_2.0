@@ -131,9 +131,9 @@ def main():
 
     #Furier plot for c(t)
     fig, ax = new_figure()
-    ax.plot(freqs / (2 * np.pi) * 1e-9, np.abs(c_hat_total),   lw=1.5, label=r"Total $|\hat{c}(\nu)|$")
-    ax.plot(freqs / (2 * np.pi) * 1e-9, np.abs(c_hat_num),     lw=1.0, linestyle='--', label=r"Numerical (driven)")
-    ax.plot(freqs / (2 * np.pi) * 1e-9, np.abs(c_hat_ana),     lw=1.0, linestyle='--', label=r"Analytical (tail)")
+    ax.plot(freqs  * 1e-9, np.abs(c_hat_total),   lw=1.5, label=r"Total $|\hat{c}(\nu)|$")
+    ax.plot(freqs  * 1e-9, np.abs(c_hat_num),     lw=1.0, linestyle='--', label=r"Numerical (driven)")
+    ax.plot(freqs  * 1e-9, np.abs(c_hat_ana),     lw=1.0, linestyle='--', label=r"Analytical (tail)")
     ax.axvline(omega / (2 * np.pi) * 1e-9, color='k', linestyle=':', lw=1.0, label=r"$f_{\rm cav}$")
     f_cav_GHz = omega / (2 * np.pi) * 1e-9
     ax.set_xlim(f_cav_GHz * 0.999, f_cav_GHz * 1.001)  # ±0.1% around resonance
