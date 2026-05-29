@@ -108,10 +108,6 @@ def main():
 
     start = time.time()
     print("[INFO] Solving the ODE with a given RHS(t)...")
-    # result = solve_mode_amplitude(
-    #     ts=ts_ext, RHS_fn=RHS_fn,
-    #     omega=omega, Q=args.Q,
-    # )
 
     result = solve_mode_amplitude(
         ts=ts, RHS_fn=RHS_fn,        # <-- ts, not ts_ext
@@ -131,14 +127,14 @@ def main():
 
     #Furier plot for c(t)
     fig, ax = new_figure()
-    ax.plot(freqs  * 1e-9, np.abs(c_hat_total),   lw=1.5, label=r"Total $|\hat{c}(\nu)|$")
+    ax.plot(freqs  * 1e-9, np.abs(c_hat_total),   lw=1.5, label=r"Total $|\hat{c}(f)|$")
     ax.plot(freqs  * 1e-9, np.abs(c_hat_num),     lw=1.0, linestyle='--', label=r"Numerical (driven)")
     ax.plot(freqs  * 1e-9, np.abs(c_hat_ana),     lw=1.0, linestyle='--', label=r"Analytical (tail)")
     ax.axvline(omega / (2 * np.pi) * 1e-9, color='k', linestyle=':', lw=1.0, label=r"$f_{\rm cav}$")
     f_cav_GHz = omega / (2 * np.pi) * 1e-9
     ax.set_xlim(f_cav_GHz * 0.999, f_cav_GHz * 1.001)  # ±0.1% around resonance
     ax.set_xlabel(r"$f$ [GHz]")
-    ax.set_ylabel(r"$|\hat{c}(\nu)|$")
+    ax.set_ylabel(r"$|\hat{c}(f)|$")
     ax.set_title(rf"Fourier transform of $c(t)$ for " + rhs_description + f"\n waveform file: {args.data}")
     ax.legend()
     save_figure(fig, os.path.join(save_dir, f"Fourier_c_" + mode_description + ".png"))

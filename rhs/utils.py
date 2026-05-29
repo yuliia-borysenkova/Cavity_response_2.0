@@ -114,7 +114,6 @@ def load_characteristic_length_from_run_config(results_dir, geometry, mode_name,
     dir_name = f"{geometry}_{mode_name}_{mode_ind}_theta={theta}_phi={phi}_Ns={Ns}"
     run_dir = os.path.join(results_dir, dir_name)
     config_path = os.path.join(run_dir, "run_config.json")
-    print("here")
     if os.path.exists(config_path):
         with open(config_path, "r") as f:
             run_info = json.load(f)

@@ -169,7 +169,8 @@ def compute_full_fourier(result, ts_ext, n_driven, tukey_alpha=0.1):
 
     dt    = ts_ext[1] - ts_ext[0]
     n     = len(ts_ext)
-    omegas = np.fft.fftfreq(n, d=dt) * 2 * np.pi
+    freqs = np.fft.fftfreq(n, d=dt)
+    omegas = freqs * 2 * np.pi
 
     # driven part: zero-padded FFT
     # Tukey window applied only to driven segment, right edge only
@@ -177,15 +178,13 @@ def compute_full_fourier(result, ts_ext, n_driven, tukey_alpha=0.1):
     window   = tukey(n_driven, alpha=tukey_alpha)
     window[:n_driven//2] = 1.0                      # flatten left half — signal starts smoothly
     c_padded[:n_driven]  = result['c'][:n_driven] * window
-    c_hat_num            = np.fft.fft(c_padded) * dt * np.exp(-1j*freqs*ts_ext[0])
+    c_hat_num            = np.fft.fft(c_padded) * dt * np.exp(-1j*omegas*ts_ext[0])
 
     # free-decay tail: analytical (no windowing needed)
     s         = result['alpha'] + 1j * omegas
     c_hat_ana = np.exp(-1j * omegas * result['t0']) * \
                 (result['A_n'] * s + result['B_n'] * result['omega_d']) / \
                 (s**2 + result['omega_d']**2)
-    
-    freqs = omegas / (2 * np.pi)
 
     return freqs, c_hat_num, c_hat_ana, c_hat_num + c_hat_ana
 
