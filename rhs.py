@@ -94,7 +94,7 @@ def main():
     ax.legend()
     save_figure(fig, os.path.join(save_dir,  f"RHS(t).png"))
 
-    if args.pre_RHS == True:
+    if args.pre_RHS:
         # Plot RHS array as a function of time
         fig, ax = new_figure()
         ax.plot(ts * 1e9, pre_RHS, label="preRHS (slicing method)")
