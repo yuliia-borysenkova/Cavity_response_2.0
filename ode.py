@@ -168,15 +168,14 @@ def main():
          f"Energy_" + mode_description + ".png"),
     ]
 
+    f_cavity = omega / (2 * np.pi)
+    t_match, _ = find_chirp_match_time(ts=ts_ext, f_cavity=f_cavity,
+                                        data_dir=args.data_dir, data_file_name=args.data)
+
     for y, label, ylabel, title, filename in plots:
         fig, ax = new_figure()
         ax.plot(ts_ext * 1e9, y, label=label)
 
-        f_cavity = omega / (2 * np.pi)
-        t_match, _ = find_chirp_match_time(
-            ts=ts_ext, f_cavity=f_cavity,
-            data_dir=args.data_dir, data_file_name=args.data,
-        )
         if t_match is not None and args.freq_match:
             ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5,
                        color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")

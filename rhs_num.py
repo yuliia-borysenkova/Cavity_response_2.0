@@ -143,7 +143,7 @@ def main():
     
     # Add vertical line for resonant time if frequency matching is enabled
     f_cavity = omega/(2*np.pi)
-    t_match, _ = find_chirp_match_time(ts=ts, f_cavity=omega, data_dir=args.data_dir, data_file_name=args.data)
+    t_match, _ = find_chirp_match_time(ts=ts, f_cavity=f_cavity, data_dir=args.data_dir, data_file_name=args.data)
     if t_match is not None and args.freq_match:
         ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
     

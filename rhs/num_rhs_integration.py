@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from scipy.constants import c as c_cnst
 from scipy import integrate, interpolate, stats
 
+#old compute_num_rhs, not fully vectorised, with lambda interp wrappers for hplus and hcross. Kept for reference.
+
 def compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plusdir, B_crossdir, hplus, hcross, ell):
 
     xp_num = len(xps)
@@ -31,6 +33,59 @@ def compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plusdir, B_crossdir, hplus,
 
     return overlaps_sum1d.real, errs_sum1d
 
+#vectorised compute_num_rhs, with vectorised interpolation of hplus and hcross. More efficient and cleaner
+"""
+def compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plusdir, B_crossdir, hplus_arr, hcross_arr, t_data, ell):
+    xp_num = len(xps)
+
+    # --- E-field slice averages (unchanged, already vectorised) ---
+    EE = V * np.mean(
+        stats.norm.pdf(xpar[:, None], loc=xps[None, :], scale=ell)[:, :, None]
+        * np.conj(Efield[:, None, :]),
+        axis=0,
+    )  # shape (Ns, 3)
+
+    E_plus  = EE @ np.conj(B_plusdir)   # shape (Ns,)
+    E_cross = EE @ np.conj(B_crossdir)  # shape (Ns,)
+
+    # --- Vectorised retarded-time interpolation ---
+    # t_ret[i_t, i_x] = ts[i_t] - xps[i_x] / c
+    t_ret = ts[:, None] - xps[None, :] / c_cnst   # shape (Nt, Ns)
+
+    hp  = np.interp(t_ret.ravel(), t_data, hplus_arr,  left=0.0, right=0.0).reshape(t_ret.shape)
+    hc  = np.interp(t_ret.ravel(), t_data, hcross_arr, left=0.0, right=0.0).reshape(t_ret.shape)
+
+    # --- Overlap integral ---
+    # shape (Nt,)
+    overlap = (xps[-1] - xps[0]) / xp_num * np.sum(
+        hp * E_plus[None, :] + hc * E_cross[None, :], axis=1
+    )
+
+    # --- Error (vectorised) ---
+    EEsDD   = (EE[2:] - 2*EE[1:-1] + EE[:-2]) / (xps[1] - xps[0])**2
+    EEsqr   = V * np.mean(
+        stats.norm.pdf(xpar[:, None], loc=xps[None, :], scale=ell)[:, :, None]**2
+        * np.abs(Efield[:, None, :])**2,
+        axis=0,
+    )
+    EE_sys  = np.abs(EEsDD) * ell**2 / 2
+    EE_stat = np.sqrt((V * EEsqr - np.abs(EE)**2) / num)
+    EE_errs = np.sqrt(EE_sys**2 + EE_stat[1:-1]**2)
+
+    hp_mid = np.interp((ts[:, None] - xps[1:-1][None, :] / c_cnst).ravel(),
+                       t_data, hplus_arr, left=0.0, right=0.0).reshape(len(ts), -1)
+    hc_mid = np.interp((ts[:, None] - xps[1:-1][None, :] / c_cnst).ravel(),
+                       t_data, hcross_arr, left=0.0, right=0.0).reshape(len(ts), -1)
+
+    integrand_err = (hp_mid[:, :, None] * B_plusdir[None, None, :]
+                   + hc_mid[:, :, None] * B_crossdir[None, None, :])  # (Nt, Ns-2, 3)
+    errs = (xps[-1] - xps[0]) / xp_num * np.sqrt(
+        np.einsum('txi,xi->t', integrand_err**2, np.abs(EE_errs)**2)
+    )
+
+    return overlap.real, errs
+"""
+    
 def extract_mode(mode_path, threshold=True):
 
     def conv(fld):
