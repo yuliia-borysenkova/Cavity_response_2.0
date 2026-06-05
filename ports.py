@@ -55,7 +55,7 @@ def main():
         pkg = np.load(file_path, allow_pickle=True)
 
         freqs = pkg["freqs"]
-        dt = pkg["t"][1] - pkg["t"][0]
+        dt = pkg["ts"][1] - pkg["ts"][0]
         c_hat_num = pkg["c_hat_numerical"]
 
         threshold = 5e-2
