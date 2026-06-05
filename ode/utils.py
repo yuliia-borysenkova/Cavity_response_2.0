@@ -131,7 +131,7 @@ def analytical_free_decay(result, ts_ext, omega, Q):
     Extend ODE solution analytically over the zero-forcing tail.
     Returns result dict with c, cD, t stitched over full ts_ext.
     """
-    ts  = result['t']
+    ts  = result['ts']
     t0  = ts[-1]
     c0  = result['c'][-1]
     cD0 = result['cD'][-1]
@@ -154,7 +154,7 @@ def analytical_free_decay(result, ts_ext, omega, Q):
 
     return {
         **result,
-        "t":       ts_ext,
+        "ts":       ts_ext,
         "c":       np.concatenate([result['c'],  c_tail]),
         "cD":      np.concatenate([result['cD'], cD_tail]),
         "A_n":     A_n,       # <-- exposed for Fourier
