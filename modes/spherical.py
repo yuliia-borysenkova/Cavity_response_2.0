@@ -97,7 +97,7 @@ class SphericalMode(CavityMode):
             Ephi = - m / (Y[0] * sin_theta_safe) * jn_hat_der(n, root_np * Y[0] / R) * lpmv(m, n, np.cos(Y[1])) * np.cos(m * Y[2])
             
         else:
-            raise ValueError("Invalid mode {self.mode_name} {self.mode_ind}")
+            raise ValueError(f"Invalid mode {self.mode_name} {self.mode_ind}")
 
         return np.array([Er, Etheta, Ephi])
         
@@ -128,7 +128,12 @@ def lpmv_ext(m, n, x):
     return lpmv(m, n, x)
 
 def dPnm_dtheta(n, m, theta):
-    return (n*np.cos(theta) * lpmv_ext(m, n, np.cos(theta)) - (n+m) * lpmv_ext(m, n-1, np.cos(theta))) / np.sin(theta)
+    #avoid division by zero at poles
+    sin_t = np.sin(theta)
+    sin_safe = np.where(np.abs(sin_t) > 1e-12, sin_t,
+                        np.sign(sin_t + 1e-300) * 1e-12)
+    return (n*np.cos(theta) * lpmv_ext(m, n, np.cos(theta))
+          - (n+m) * lpmv_ext(m, n-1, np.cos(theta))) / sin_safe
 
 def derivative_spherical_jn(n, x):
     if n==0:
@@ -136,13 +141,15 @@ def derivative_spherical_jn(n, x):
     return spherical_jn(n-1, x) - (n+1)/ x * spherical_jn(n, x)
 
 def find_zero(n, p, function, x_max=100, num_points=10000):
-    xs = np.linspace(1e-3, x_max, num_points)
-    ys = function(n, xs)
+    xs = np.linspace(0.01, x_max, num_points)
+    ys = [function(n, x) for x in xs]
     zeros = []
     for i in range(len(xs)-1):
         if ys[i]*ys[i+1] < 0:
-            if len(zeros) >= p:
-                break
             zero = brentq(lambda x: function(n, x), xs[i], xs[i+1])
             zeros.append(zero)
+            if len(zeros) > p:
+                break
+    if not zeros:
+        raise ValueError(f"No zero found for n={n}, p={p}")
     return zeros[-1]

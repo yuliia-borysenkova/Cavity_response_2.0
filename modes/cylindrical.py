@@ -71,7 +71,8 @@ class CylindricalMode(CavityMode):
         n, p, q = self.n, self.p, self.q
         L, R = self.cavity.L, self.cavity.R
         root_np = self.root
-        
+
+        Y = np.array(Y, copy=True)  # defensive copy
         Y[0] = max(Y[0], 1e-30)  # avoid division by zero at rho=0
         
         if self.mode_name == 'TEa':
