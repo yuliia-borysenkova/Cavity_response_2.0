@@ -14,8 +14,8 @@ def parse_arguments() -> WaveformConfig:
                     "and optionally add GW memory, clipping, and plotting."
     )
 
-    parser.add_argument("--m-absolute", type=float, default=1e-6,
-                        help="Total mass scale of the system in solar masses (M_sun).")
+    parser.add_argument("--m-total", type=float, default=1e-6,
+                        help="Total mass of the system in solar masses (M_sun).")
     
     parser.add_argument("--q", type=float, default=1,
                         help="Mass ratio m1/m2 (larger mass over smaller mass).")
@@ -31,9 +31,6 @@ def parse_arguments() -> WaveformConfig:
 
     parser.add_argument("--low_freq", type=float, default=1e8,
                         help="Lower frequency bound of waveform (Hz).")
-    
-    parser.add_argument("--high_freq", type=float, default=1e11,
-                        help="Upper frequency bound of waveform (Hz).")
     
     parser.add_argument("--tc", type=float, default=0.0,
                         help="Time of coalescence in seconds.")
@@ -84,7 +81,7 @@ def parse_arguments() -> WaveformConfig:
 
 def main():
     cfg = parse_arguments()
-    output_path = prepare_output_path(cfg.data_dir, cfg.output, cfg.m_absolute, cfg.q)
+    output_path = prepare_output_path(cfg.data_dir, cfg.output, cfg.m_total, cfg.q)
     save_config_to_json(cfg, output_path)
 
     start = time.time()

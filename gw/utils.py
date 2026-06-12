@@ -26,7 +26,7 @@ def plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title=None, save_path=
     ax.set_title(title)
     ax.plot(data[0], data[1], label=labels[0])
     ax.plot(data[0], data[2], label=labels[1])
-    ax.set_xlabel(r"$t$ [s]")
+    ax.set_xlabel(r"Time $t$ [s]")
     ax.set_ylabel("Strain $h$")
     ax.legend()
     
@@ -37,7 +37,7 @@ def plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title=None, save_path=
     if display:    
         plt.show()
 
-def prepare_output_path(data_folder, output_stem, M_abs, q):
+def prepare_output_path(data_folder, output_stem, M_abs, q, hyperbolic=False):
     
     os.makedirs(data_folder, exist_ok=True)
     
@@ -46,6 +46,9 @@ def prepare_output_path(data_folder, output_stem, M_abs, q):
         M_str = f"{M_abs:.2e}"
         q_str = f"{q:.2f}"
         output_stem = f"GW_M={M_str}_q={q_str}_{timestamp}"
+    
+    if hyperbolic:
+        output_stem = "hyp_" + output_stem
         
     return os.path.join(data_folder, output_stem)
 

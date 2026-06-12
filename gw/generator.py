@@ -12,7 +12,7 @@ from gw.utils import plot_waveform, prepare_output_path
 @dataclass
 class WaveformConfig:
     # Masses and spins
-    m_absolute: float = 1e-7
+    m_total: float = 1e-7
     q: float = 1.0
     spin_1: List[float] = field(default_factory=lambda: [0.0, 0.0, 0.0])
     spin_2: List[float] = field(default_factory=lambda: [0.0, 0.0, 0.0])
@@ -26,7 +26,6 @@ class WaveformConfig:
     
     # Frequency settings
     low_freq: float = 1e9
-    high_freq: float = 1e12
     
     # Distance
     distance: float = 1e-5
@@ -73,7 +72,6 @@ class WaveformPipeline:
             distance_mpc,
             self.cfg.inclination,
             self.cfg.low_freq / ratio,
-            self.cfg.high_freq / ratio,
             self.cfg.eccentricity,
             self.cfg.phi0,
         ) / ratio
