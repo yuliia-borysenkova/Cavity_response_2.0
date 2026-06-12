@@ -7,7 +7,7 @@ from multiprocessing import Pool
 def compute_coupling(args):
     cavity, mode, B, pol, omega, k, e1, e2, t = args
     def hplus(tau):  return h_monochromatic(amplitude=1.0, tau=tau, omega=omega)
-    def hcross(tau): return h_monochromatic(amplitude=1.0, tau=tau, omega=omega)
+    def hcross(tau): return h_monochromatic(amplitude=1.0, tau=tau, omega=omega, phase=np.pi/2)
 
     jeff = make_jeff(B=B, cavity=cavity, hplus=hplus, hcross=hcross, k=k, e1=e1, e2=e2)[pol]
     V = cavity.volume()

@@ -16,6 +16,7 @@ class RectangularMode(CavityMode):
     def _is_zero_mode(self):
         return False
 
+
     def _validate(self):
         m, n, p = self.m, self.n, self.p
 
