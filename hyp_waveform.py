@@ -82,11 +82,13 @@ def main():
     data = [times, h_plus, h_cross]
 
     # plot_waveform
-    plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title="PBH hyperbolic encounter", save_path=None, display=args.display)
+    if args.plot:
+        plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title="PBH hyperbolic encounter", save_path=output_path+".png", display=args.display)
 
-    data = rotate_polarization(data, args.polarization_angle, plot=args.plot, display=args.display)
-    
-    print(f"[INFO] Signal peaks at {f_peak/1e9:.2f} GHz.")
+    if args.polarization_angle != 0:
+        data = rotate_polarization(data, args.polarization_angle, plot=args.plot, display=args.display)
+
+    print(f"[INFO] Signal peaks at {f_peak/1e9:.3f} GHz.")
     print(f"[INFO] Computed in {time.time()-start: .2f} s.")
 
     np.save(output_path + ".npy", data)
