@@ -66,8 +66,8 @@ def get_hyp_waveform(M, q, et0, b, ti, tf, t_step, inc, distance, order, estimat
         print(f"[INFO] Maximum velocity during approach was {maximum_velocity: .3f} c.")
         if np.max(np.abs(rt_arr)) > 0.5:
             print("[WARNING] The PN approximation may not be convergent.")
-        Hp=hp_arr/scale
-        Hx=hx_arr/scale
+        Hp = hp_arr / scale
+        Hx = hx_arr / scale
 
         #Eliminate DC offset term at -infinity
         if estimatepeak == True:

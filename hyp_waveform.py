@@ -83,7 +83,7 @@ def main():
 
     # plot_waveform
     if args.plot:
-        plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title="PBH hyperbolic encounter", save_path=output_path+".png", display=args.display)
+        plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title="PBH hyperbolic encounter", save_path=output_path, display=args.display)
 
     if args.polarization_angle != 0:
         data = rotate_polarization(data, args.polarization_angle, plot=args.plot, display=args.display)

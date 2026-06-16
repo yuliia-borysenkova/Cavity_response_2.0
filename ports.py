@@ -35,14 +35,17 @@ def main():
 
     os.makedirs(args.results_dir, exist_ok=True)
 
-    s11_vals = scipy.io.loadmat("S11 sweep - step 2 kHz.mat")["S11"].flatten()
-    s11_freqs = scipy.io.loadmat("frequency sweep - step 2 kHz.mat")["freq_vec"].flatten()
+    # s11_vals = scipy.io.loadmat("S11 sweep - step 2 kHz.mat")["S11"].flatten()
+    # s11_freqs = scipy.io.loadmat("frequency sweep - step 2 kHz.mat")["freq_vec"].flatten()
+
+    s11_freqs = scipy.io.loadmat("s11 sweep 0.475-0.775 GHz (step 0.5 kHz)")["freq_total"].flatten()
+    s11_vals = scipy.io.loadmat("s11 sweep 0.475-0.775 GHz (step 0.5 kHz)")["s11_total"].flatten()
 
     F_dict = {"TMb_0,1,0": -0.0081, "TMb_0,1,1": -0.0116,"TMb_0,1,2": -0.0120}
-    freq_dict = {"TMb_0,1,0": 0.5e9, "TMb_0,1,1": 582.960e6,"TMb_0,1,2": 780.685e6}
+    freq_dict = {"TMb_0,1,0": 0.5e9, "TMb_0,1,1": 582.960e6, "TMb_0,1,2": 780.685e6}
 
     s11_freqs, s11_vals = rebuild_s11_grid(s11_freqs, s11_vals, freq_dict)
-    I_gw_freq = np.zeros_like(s11_freqs, dtype=np.complex128)
+    I_gw_modes = []
 
     for mode_name, F_m1 in F_dict.items():
 
@@ -58,7 +61,7 @@ def main():
         dt = pkg["ts"][1] - pkg["ts"][0]
         c_hat_num = pkg["c_hat_numerical"]
 
-        threshold = 5e-2
+        threshold = 8.5e-2
         _, freqs_exceed = compare_contributions(pkg, c_hat_num, freqs, s11_freqs, threshold)
 
         omegas = s11_freqs * 2 * np.pi
@@ -76,17 +79,23 @@ def main():
             c_hat_num_interp = fourier_interp(c_hat_num, freqs * 2 * np.pi, s11_freqs * 2 * np.pi, dt)
             c_hat = c_hat_num_interp + c_hat_ana
 
-        I_gw_freq += F_m1 * c_hat * (freq_dict[mode_name] / s11_freqs) * 1j
+        I_gw_modes.append(F_m1 * c_hat * (freq_dict[mode_name] / s11_freqs) * 1j)
 
         print("[INFO] Mode", mode_name, "done.")
 
+    I_gw_modes = np.asarray(I_gw_modes)
+    I_gw = np.sum(I_gw_modes, axis=0)
+
     Y_w = np.sqrt(epsilon_0 * args.epsilon_r / mu_0)
     Y_c = Y_w * (1 - s11_vals) / (1 + s11_vals)
-    V_c = I_gw_freq / (Y_w + Y_c)
 
+    V_c_modes = (I_gw_modes / (Y_w + Y_c))
+    V_meas_modes = V_c_modes * np.sqrt(np.log(args.a / args.b) / (2 * np.pi))
+    P_w_modes = (np.abs(I_gw_modes) ** 2 / (2 * np.abs(Y_w + Y_c) ** 2) * np.real(Y_w))
+
+    V_c = I_gw / (Y_w + Y_c)
     V_meas = V_c * np.sqrt(np.log(args.a / args.b) / (2 * np.pi))
-
-    P_w = (np.abs(I_gw_freq) ** 2 / (2 * np.abs(Y_w + Y_c) ** 2) * np.real(Y_w))
+    P_w = (np.abs(I_gw) ** 2 / (2 * np.abs(Y_w + Y_c) ** 2) * np.real(Y_w))
 
     np.save(
         os.path.join(args.results_dir, "output.npy"),
@@ -94,66 +103,114 @@ def main():
             "freqs": s11_freqs,
             "V_meas": V_meas,
             "P_w": P_w,
-            "I_gw_freq": I_gw_freq
+            "I_gw": I_gw
         }
     )
+
+    mode_names = list(F_dict.keys())
+
+    mode_labels = [
+        rf"TM$_{{{name.split('_')[1].replace(',', '')}}}$"
+        for name in mode_names
+    ]
+
+    voltage_mode_curves = [
+        {
+            "x": s11_freqs / 1e9,
+            "y": np.abs(V_meas_modes[i]),
+            "label": label,
+            "plot_kwargs": {
+                "linestyle": "--"
+            },
+        }
+        for i, label in enumerate(mode_labels)
+    ]
+
+    power_mode_curves = [
+        {
+            "x": s11_freqs / 1e9,
+            "y": P_w_modes[i],
+            "label": label,
+            "plot_kwargs": {
+                "linestyle": "--"
+            },
+        }
+        for i, label in enumerate(mode_labels)
+    ]
 
     plots = [
 
         {
             "filename": os.path.join(args.results_dir, "voltage_spectrum.png"),
-            "xlabel": "Frequency [GHz]",
-            "ylabel": r"$|V_{\mathrm{meas}}|$ [V]",
-            "title": "Measured Voltage Spectrum",
-            "xlim": (0.45, 0.9),
+            "xlabel": r"Frequency $f$ [GHz]",
+            "ylabel": r"Measured voltage spectrum $|V_{\mathrm{meas}}|$ [V Hz$^{-1}$]",
+            "title": "Measured voltage spectrum",
+            "legend": True,
             "yscale": "log",
             "curves": [
                 {
                     "x": s11_freqs / 1e9,
                     "y": np.abs(V_meas),
+                    "label": "Total",
                     "plot_kwargs": {
-                        "color": "#a00000"
+                        "color": "#000000",
+                        "linewidth": 1.2
                     },
-                }
+                },
+                *voltage_mode_curves
             ],
         },
 
         {
-            "filename": os.path.join(args.results_dir, "power_spectrum.png"),
-            "xlabel": "Frequency [GHz]",
-            "ylabel": "Power [W]",
-            "title": "Detected Power Spectrum",
-            "xlim": (0.45, 0.9),
+            "filename": os.path.join(args.results_dir, "voltage_phase.png"),
+            "xlabel": r"Frequency $f$ [GHz]",
+            "ylabel": r"$\mathrm{phase}[V_{\mathrm{meas}}]$, $^\circ$",
+            "title": "Measured voltage phase",
+            "curves": [
+                {
+                    "x": s11_freqs / 1e9,
+                    "y": np.angle(V_meas)/np.pi*180,
+                    "label": "Total",
+                    "plot_kwargs": {
+                        "color": "#000000",
+                        "linewidth": 1.2
+                    },
+                },
+            ]
+        },
+
+        {
+            "filename": os.path.join(args.results_dir, "energy_spectral_density.png"),
+            "xlabel": r"Frequency $f$ [GHz]",
+            "ylabel": r"Energy spectral density $P_w$ [J Hz$^{-1}$]",
+            "title": "Energy spectral density",
+            "legend": True,
             "yscale": "log",
             "curves": [
                 {
                     "x": s11_freqs / 1e9,
                     "y": P_w,
+                    "label": "Total",
                     "plot_kwargs": {
-                        "color": "#a00000"
+                        "color": "#000000",
+                        "linewidth": 1.2
                     },
-                }
+                },
+            *power_mode_curves
             ],
         },
 
         {
             "filename": os.path.join(args.results_dir, "I_gw_mag.png"),
-            "xlabel": "Frequency [GHz]",
-            "ylabel": r"$|I_\mathrm{gw}|$ [A]",
-            "title": "Gravitational Wave Current Spectrum",
-            "xlim": (0.46, 0.56),
-            "ylim": (1e-17, 1e-12),
+            "xlabel": r"Frequency $f$ [GHz]",
+            "ylabel": r"Source current $|I_\mathrm{gw}|$ [A $Hz^{-1}$]",
+            "title": "Gravitational wave current spectrum",
             "yscale": "log",
-            "legend": True,
             "curves": [
                 {
                     "x": s11_freqs / 1e9,
-                    "y": np.abs(I_gw_freq),
-                    "label": "interpolated",
+                    "y": np.abs(I_gw),
                     "plot_kwargs": {
-                        "marker": ".",
-                        "markersize": 0.7,
-                        "linestyle": "None",
                         "color": "#a00000"
                     },
                 },
@@ -162,15 +219,13 @@ def main():
 
         {
             "filename": os.path.join(args.results_dir, "I_gw_phase.png"),
-            "xlabel": "Frequency [GHz]",
-            "ylabel": r"$\mathrm{phase}[I_\mathrm{gw}], \mathrm{degrees}$",
-            "title": "Gravitational Wave Current Spectrum",
-            "xlim": (0.46, 0.56),
-            "legend": True,
+            "xlabel": r"Frequency $f$ [GHz]",
+            "ylabel": r"$\mathrm{phase}[I_\mathrm{gw}]$, $^\circ$",
+            "title": "Phase of gravitational wave current",
             "curves": [
                 {
                     "x": s11_freqs / 1e9,
-                    "y": np.angle(I_gw_freq) / np.pi * 180,
+                    "y": np.angle(I_gw) / np.pi * 180,
                     "label": "interpolated",
                     "plot_kwargs": {
                         "marker": ".",
@@ -186,7 +241,7 @@ def main():
             "filename": os.path.join(args.results_dir, "s11_mag.png"),
             "xlabel": "Frequency [GHz]",
             "ylabel": r"$|S_{11}|, \mathrm{dB}$",
-            "title": r"$|S_{11}|$ as a Function of Frequency",
+            "title": r"$|S_{11}|$ as a function of frequency",
             "curves": [
                 {
                     "x": s11_freqs / 1e9,
@@ -201,8 +256,8 @@ def main():
         {
             "filename": os.path.join(args.results_dir, "s11_phase.png"),
             "xlabel": "Frequency [GHz]",
-            "ylabel": r"$\mathrm{phase}[S_{11}], \mathrm{degrees}$",
-            "title": r"$S_{11}$ phase as a Function of Frequency",
+            "ylabel": r"$\mathrm{phase}[S_{11}], ^\circ$",
+            "title": r"$S_{11}$ phase as a function of frequency",
             "curves": [
                 {
                     "x": s11_freqs / 1e9,

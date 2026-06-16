@@ -39,7 +39,7 @@ def fourier_interp_narrow(c_hat, omega_k, omega, dt):
 
     return c_hat_interp / N
 
-def rebuild_s11_grid(s11_freqs, s11_vals, freq_dict, coarse_step=1000, df=5e6):
+def rebuild_s11_grid(s11_freqs, s11_vals, freq_dict, coarse_step=1, df=5e6):
 
     important = np.zeros_like(s11_freqs, dtype=bool)
 
