@@ -10,6 +10,7 @@ def parse_args():
 
     parser.add_argument("--results-dir", type=str, default="results")
     parser.add_argument("--data", type=str, required=True)
+    parser.add_argument("--cavity-data", type=str, default="cavity_data")
 
     parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical")
 
@@ -36,14 +37,14 @@ def main():
     os.makedirs(args.results_dir, exist_ok=True)
 
     s11_freqs, s11_vals = load_s11(
-    "s11 sweep 0.475-0.775 GHz (step 0.5 kHz).mat"
+    os.path.join(args.cavity_data, "s11 sweep 0.475-0.775 GHz (step 0.5 kHz).mat")
     )
 
     # Replacement files
     replacement_files = [
-        "TM010_17062026.mat",
-        "TM011_17062026.mat",
-        "TM012_17062026.mat",
+        os.path.join(args.cavity_data, "TM010_17062026.mat"),
+        os.path.join(args.cavity_data, "TM011_17062026.mat"),
+        os.path.join(args.cavity_data, "TM012_17062026.mat"),
     ]
 
     # Sequentially replace each window

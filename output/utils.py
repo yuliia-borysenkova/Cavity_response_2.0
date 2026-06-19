@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 from tqdm import tqdm
 from plotting import new_figure, save_figure
 
