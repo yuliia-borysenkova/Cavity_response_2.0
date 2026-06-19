@@ -118,3 +118,52 @@ def create_plot(spec):
         ax.legend()
 
     save_figure(fig, spec["filename"])
+
+def load_s11(filename):
+    data = scipy.io.loadmat(filename)
+
+    # Original sweep format
+    if "freq_total" in data and "s11_total" in data:
+        freqs = data["freq_total"].flatten()
+        s11 = data["s11_total"].flatten()
+
+    # High-resolution format
+    elif "freq_vec" in data and "S11" in data:
+        freqs = data["freq_vec"].flatten()
+        s11 = data["S11"].flatten()
+
+    else:
+        raise ValueError(
+            f"Unknown .mat structure in {filename}\n"
+            f"Available keys: {list(data.keys())}"
+        )
+
+    return freqs, s11
+
+
+def replace_frequency_region(base_freqs, base_vals, replacement_freqs, replacement_vals):
+    """
+    Replace the region in (base_freqs, base_vals) covered by replacement_freqs
+    with the higher-resolution replacement data.
+    """
+
+    fmin = replacement_freqs.min()
+    fmax = replacement_freqs.max()
+
+    # Keep only points outside replacement interval
+    keep = (base_freqs < fmin) | (base_freqs > fmax)
+
+    stitched_freqs = np.concatenate([
+        base_freqs[keep],
+        replacement_freqs
+    ])
+
+    stitched_vals = np.concatenate([
+        base_vals[keep],
+        replacement_vals
+    ])
+
+    # Ensure final arrays remain ordered
+    order = np.argsort(stitched_freqs)
+
+    return stitched_freqs[order], stitched_vals[order]

@@ -2,7 +2,7 @@ import os, argparse, time
 import numpy as np
 import scipy.io
 from scipy.constants import epsilon_0, mu_0
-from output.utils import create_plot, compare_contributions, rebuild_s11_grid, fourier_interp
+from output.utils import create_plot, compare_contributions, rebuild_s11_grid, fourier_interp, load_s11, replace_frequency_region
 
 def parse_args():
 
@@ -35,16 +35,32 @@ def main():
 
     os.makedirs(args.results_dir, exist_ok=True)
 
-    # s11_vals = scipy.io.loadmat("S11 sweep - step 2 kHz.mat")["S11"].flatten()
-    # s11_freqs = scipy.io.loadmat("frequency sweep - step 2 kHz.mat")["freq_vec"].flatten()
+    s11_freqs, s11_vals = load_s11(
+    "s11 sweep 0.475-0.775 GHz (step 0.5 kHz).mat"
+    )
 
-    s11_freqs = scipy.io.loadmat("s11 sweep 0.475-0.775 GHz (step 0.5 kHz)")["freq_total"].flatten()
-    s11_vals = scipy.io.loadmat("s11 sweep 0.475-0.775 GHz (step 0.5 kHz)")["s11_total"].flatten()
+    # Replacement files
+    replacement_files = [
+        "TM010_17062026.mat",
+        "TM011_17062026.mat",
+        "TM012_17062026.mat",
+    ]
+
+    # Sequentially replace each window
+    for fname in replacement_files:
+        f_new, s11_new = load_s11(fname)
+
+        s11_freqs, s11_vals = replace_frequency_region(
+            s11_freqs,
+            s11_vals,
+            f_new,
+            s11_new
+        )
 
     F_dict = {"TMb_0,1,0": -0.0081, "TMb_0,1,1": -0.0116,"TMb_0,1,2": -0.0120}
     freq_dict = {"TMb_0,1,0": 0.5e9, "TMb_0,1,1": 582.960e6, "TMb_0,1,2": 780.685e6}
 
-    s11_freqs, s11_vals = rebuild_s11_grid(s11_freqs, s11_vals, freq_dict)
+    # s11_freqs, s11_vals = rebuild_s11_grid(s11_freqs, s11_vals, freq_dict)
     I_gw_modes = []
 
     for mode_name, F_m1 in F_dict.items():
