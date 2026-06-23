@@ -26,6 +26,7 @@ class WaveformConfig:
     
     # Frequency settings
     low_freq: float = 1e9
+    delta_t: float = 0.1e-9
     
     # Distance
     distance: float = 1e-5
@@ -55,9 +56,9 @@ class WaveformPipeline:
     def run(self):
         #self.save_config_to_json()
         
-        ratio = 10 / self.cfg.m_absolute
+        ratio = 10 / self.cfg.m_total
 
-        m2 = self.cfg.m_absolute / (1 + self.cfg.q) * ratio
+        m2 = self.cfg.m_total / (1 + self.cfg.q) * ratio
         m1 = self.cfg.q * m2
 
         distance_mpc = self.cfg.distance / 1e6
@@ -68,7 +69,7 @@ class WaveformPipeline:
             self.cfg.approximant,
             m1, m2,
             self.cfg.spin_1, self.cfg.spin_2,
-            1 / (self.cfg.density_factor * self.cfg.high_freq / ratio),
+            self.cfg.delta_t * ratio,
             distance_mpc,
             self.cfg.inclination,
             self.cfg.low_freq / ratio,

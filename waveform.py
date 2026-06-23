@@ -32,6 +32,9 @@ def parse_arguments() -> WaveformConfig:
     parser.add_argument("--low_freq", type=float, default=1e8,
                         help="Lower frequency bound of waveform (Hz).")
     
+    parser.add_argument("--delta_t", type=float, default=0.1e-9,
+                        help="Lower frequency bound of waveform (Hz).")
+    
     parser.add_argument("--tc", type=float, default=0.0,
                         help="Time of coalescence in seconds.")
     

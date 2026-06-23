@@ -105,10 +105,10 @@ def simple_td_model(m_1, m_2, f_lower, f_higher, delta_t, inclination, phi0, dis
 
 
 def generate_waveform(model, m1, m2, spin1, spin2, del_t,
-                      dist_mpc, incl, f_low, f_high, ecc, phi0):
+                      dist_mpc, incl, f_low, ecc, phi0):
 
     if model.lower() == "newtonian":
-        times, hp, hc = simple_td_model(m1, m2, f_low, f_high, del_t, incl, phi0, dist_mpc)
+        times, hp, hc = simple_td_model(m1, m2, f_low, del_t, incl, phi0, dist_mpc)
 
     elif ecc == 0.0:
         hp, hc = get_td_waveform(

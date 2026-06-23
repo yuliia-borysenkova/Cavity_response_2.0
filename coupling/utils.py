@@ -1,7 +1,7 @@
 import numpy as np
 
-def h_monochromatic(tau, omega, phase=0):
-    return np.exp(1j * (omega * tau + phase))
+def h_monochromatic(amplitude, tau, omega, phase=0):
+    return amplitude * np.exp(1j * (omega * tau + phase))
 
 def mean_calc(eta, theta):
     eta_sum, sin_sum = 0.0, 0.0

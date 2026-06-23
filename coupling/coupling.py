@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import tqdm
-from gw.utils import h_monochromatic
+from coupling.utils import h_monochromatic
 from rhs.utils import compute_k_pol, make_jeff
 from multiprocessing import Pool
 
