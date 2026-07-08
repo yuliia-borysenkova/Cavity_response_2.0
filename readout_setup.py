@@ -83,7 +83,7 @@ def main():
     for mode_name in args.modes:
         family, indices = parse_mode_name(mode_name)
 
-        mode = CylindricalMode(indices=indices, mode_name=family, cavity=cavity)
+        mode = CylindricalMode(indices=indices, mode_name=family, cavity=cavity, mu_r=1.0, epsilon_r=1.0, sigma_w=0.0)
         mode.normalize()
 
         F = port_coupling(mode, args.a, args.b, z=z_port)
@@ -98,7 +98,7 @@ def main():
     freq_values = []
     for mode_name in args.modes:
         family, indices = parse_mode_name(mode_name)
-        mode = CylindricalMode(indices=indices, mode_name=family, cavity=cavity)
+        mode = CylindricalMode(indices=indices, mode_name=family, cavity=cavity, mu_r=1.0, epsilon_r=1.0, sigma_w=0.0)
         freq_values.append(mode.omega() / (2 * np.pi))
     freq_values = np.array(freq_values)
 
