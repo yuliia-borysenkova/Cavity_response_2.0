@@ -75,7 +75,7 @@ def main():
         pkg = np.load(file_path, allow_pickle=True)
 
         freqs = pkg["freqs"]
-        dt = pkg["ts"][1] - pkg["ts"][0]
+        dt = pkg["t"][1] - pkg["t"][0]
         c_hat_num = pkg["c_hat_numerical"]
 
         threshold = 8.5e-2
@@ -96,7 +96,7 @@ def main():
             c_hat_num_interp = fourier_interp(c_hat_num, freqs * 2 * np.pi, s11_freqs * 2 * np.pi, dt)
             c_hat = c_hat_num_interp + c_hat_ana
 
-        I_gw_modes.append(F_m1 * c_hat * (freq_dict[mode_name] / s11_freqs) * 1j)
+        I_gw_modes.append(np.sqrt(epsilon_0/mu_0) * F_m1 * c_hat * (freq_dict[mode_name] / s11_freqs) * 1j)
 
         print("[INFO] Mode", mode_name, "done.")
 
@@ -135,6 +135,18 @@ def main():
         {
             "x": s11_freqs / 1e9,
             "y": np.abs(V_meas_modes[i]),
+            "label": label,
+            "plot_kwargs": {
+                "linestyle": "--"
+            },
+        }
+        for i, label in enumerate(mode_labels)
+    ]
+
+    cavity_voltage_mode_curves = [
+        {
+            "x": s11_freqs / 1e9,
+            "y": np.abs(V_c_modes[i]),
             "label": label,
             "plot_kwargs": {
                 "linestyle": "--"
@@ -196,10 +208,49 @@ def main():
             ]
         },
 
+                {
+            "filename": os.path.join(args.results_dir, "cavity_voltage_spectrum.png"),
+            "xlabel": r"Frequency $f$ [GHz]",
+            "ylabel": r"Cavity voltage spectrum $|V_{\mathrm{c}}|$ [V Hz$^{-1}$]",
+            "title": "Cavity voltage spectrum",
+            "legend": True,
+            "yscale": "log",
+            "curves": [
+                {
+                    "x": s11_freqs / 1e9,
+                    "y": np.abs(V_c),
+                    "label": "Total",
+                    "plot_kwargs": {
+                        "color": "#000000",
+                        "linewidth": 1.2
+                    },
+                },
+                *cavity_voltage_mode_curves
+            ],
+        },
+
+        {
+            "filename": os.path.join(args.results_dir, "cavity_voltage_phase.png"),
+            "xlabel": r"Frequency $f$ [GHz]",
+            "ylabel": r"$\mathrm{phase}[V_{\mathrm{c}}]$, $^\circ$",
+            "title": "Cavity voltage phase",
+            "curves": [
+                {
+                    "x": s11_freqs / 1e9,
+                    "y": np.angle(V_c)/np.pi*180,
+                    "label": "Total",
+                    "plot_kwargs": {
+                        "color": "#000000",
+                        "linewidth": 1.2
+                    },
+                },
+            ]
+        },
+
         {
             "filename": os.path.join(args.results_dir, "energy_spectral_density.png"),
             "xlabel": r"Frequency $f$ [GHz]",
-            "ylabel": r"Energy spectral density $P_w$ [J Hz$^{-1}$]",
+            "ylabel": r"Energy spectral density [J Hz$^{-1}$]",
             "title": "Energy spectral density",
             "legend": True,
             "yscale": "log",
@@ -220,7 +271,7 @@ def main():
         {
             "filename": os.path.join(args.results_dir, "I_gw_mag.png"),
             "xlabel": r"Frequency $f$ [GHz]",
-            "ylabel": r"Source current $|I_\mathrm{gw}|$ [A $Hz^{-1}$]",
+            "ylabel": r"Source current $|I_\mathrm{gw}|$ [A Hz$^{-1}$]",
             "title": "Gravitational wave current spectrum",
             "yscale": "log",
             "curves": [

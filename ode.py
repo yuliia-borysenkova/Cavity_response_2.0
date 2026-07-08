@@ -170,15 +170,15 @@ def main():
 
     f_cavity = omega / (2 * np.pi)
     t_match, _ = find_chirp_match_time(ts=ts_ext, f_cavity=f_cavity,
-                                        data_dir=args.data_dir, data_file_name=args.data)
+                                        # data_dir=args.data_dir, data_file_name=args.data)
 
     for y, label, ylabel, title, filename in plots:
         fig, ax = new_figure()
         ax.plot(ts_ext * 1e9, y, label=label)
 
         if t_match is not None and args.freq_match:
-            ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5,
-                       color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
+             ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5,
+                        color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
 
         ax.set_xlabel(r"$t$ [ns]")
         ax.set_ylabel(ylabel)

@@ -11,7 +11,7 @@ AU_TO_PC = 1 / 206265  # 1 AU in parsecs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--m-total", type=float, default=1e-6,
+    parser.add_argument("--m-total", type=float, default=3e-5,
                         help="Total mass of the system in solar masses (M_sun).")
     
     parser.add_argument("--q", type=float, default=1,
@@ -83,7 +83,7 @@ def main():
 
     # plot_waveform
     if args.plot:
-        plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title="PBH hyperbolic encounter", save_path=output_path, display=args.display)
+        plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title=None, save_path=output_path, display=args.display)
 
     if args.polarization_angle != 0:
         data = rotate_polarization(data, args.polarization_angle, plot=args.plot, display=args.display)

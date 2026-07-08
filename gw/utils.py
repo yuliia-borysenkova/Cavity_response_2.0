@@ -24,10 +24,10 @@ def plot_waveform(data, labels=(r"$h_+$", r"$h_\times$"), title=None, save_path=
     fig, ax = new_figure()
     
     ax.set_title(title)
-    ax.plot(data[0], data[1], label=labels[0])
-    ax.plot(data[0], data[2], label=labels[1])
-    ax.set_xlabel(r"Time $t$ [s]")
-    ax.set_ylabel("Strain $h$")
+    ax.plot(1e9*data[0], data[1], label=labels[0])
+    ax.plot(1e9*data[0], data[2], label=labels[1])
+    ax.set_xlabel(r"Time [ns]")
+    ax.set_ylabel("Strain $h(t)$")
     ax.legend()
     
     if save_path is not None:
