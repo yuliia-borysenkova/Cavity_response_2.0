@@ -94,8 +94,8 @@ def save_modes_npz(filename, rows):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scan and list cavity modes for a cylindrical cavity.")
     # --- Cavity parameters ---
-    parser.add_argument("--R", type=float, default=0.01, help="Cavity radius in [m]")
-    parser.add_argument("--L", type=float, default=0.02, help="Cavity length in [m]")
+    parser.add_argument("--R", type=float, default=0.2295, help="Cavity radius in [m]")
+    parser.add_argument("--L", type=float, default=0.5, help="Cavity length in [m]")
     parser.add_argument("--top", type=int, nargs="?", default=15, help="Number of lowest modes to display")
     args = parser.parse_args()
     R = args.R  # [m]
