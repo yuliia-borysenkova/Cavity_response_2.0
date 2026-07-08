@@ -1,6 +1,7 @@
 import numpy as np
 from .base import CavityMode
 from scipy.constants import c as c_cnst
+from scipy.constants import mu_0, epsilon_0
 
 class RectangularMode(CavityMode):
     """
@@ -8,9 +9,12 @@ class RectangularMode(CavityMode):
     TM, TE
     Indices: m,n,p
     """
-    def __init__(self, indices, mode_name, cavity):
+    def __init__(self, indices, mode_name, epsilon_r, mu_r, sigma_w, cavity):
         self.m, self.n, self.p = indices
-        super().__init__(indices, mode_name, cavity)
+        self.epsilon_r = epsilon_r
+        self.mu_r = mu_r
+        self.sigma_w = sigma_w
+        super().__init__(indices, mode_name, epsilon_r, mu_r, sigma_w, cavity)
         self.k = self.k_calc()
         
     # ---------------- mode index validation ----------------
@@ -27,8 +31,9 @@ class RectangularMode(CavityMode):
         if any(i < 0 for i in (m, n, p)):
             raise ValueError("Mode indices must be non-negative")
             
-        if m == 0 or n == 0:
-                raise ValueError("Rectangular TM modes require m >= 1 and n >= 1")
+        if self.mode_name == "TM":
+            if m == 0 or n == 0:
+                    raise ValueError("Rectangular TM modes require m >= 1 and n >= 1")
 
         if self.mode_name == "TE":
             if p == 0:
@@ -43,6 +48,39 @@ class RectangularMode(CavityMode):
 
     def omega(self):
         return c_cnst * self.k
+    
+    # ---------------- quality factor ----------------
+    def calculate_Q(self):
+        a, b, c = self.cavity.a, self.cavity.b, self.cavity.c
+        m, n, p = self.m, self.n, self.p
+
+        mu = mu_0 * self.mu_r
+        epsilon = epsilon_0 * self.epsilon_r
+        eta = np.sqrt(mu/epsilon)
+        Rs = np.sqrt(mu*self.omega()/(2*self.sigma_w))
+
+        kx = m * np.pi / a
+        ky = n * np.pi / b
+        kz = p * np.pi / c
+
+        kxy2 = kx**2 + ky**2
+
+
+        if self.mode_name == "TE":
+            if m == 0:
+                 Q = eta * a * b * c * self.k**3 / (2 * Rs * (b * c * self.k**2 + 2 * a * c * ky**2 + 2 * a * b * kz**2))
+            elif n == 0:
+                 Q = eta * a * b * c * self.k**3 / (2 * Rs * (a * c * self.k**2 + 2 * b * c * kx**2 + 2 * a * b * kz**2))
+            else:
+                 Q = eta * a * b * c * kxy2 * self.k**3 / (4 * Rs * (b * c * (kxy2**2 + ky**2 * kz**2) + a * c * (kxy2**2 + kx**2 * kz**2) + a * b * kxy2 * kz**2))
+
+        elif self.mode_name == "TM":
+            if p == 0:
+                Q =  eta * a * b * c * self.k**3 / (2 * Rs * (a * b * self.k**2 + 2 * b * c * kx**2 + 2 * a * c * ky**2))
+            else:
+                Q = eta * a * b * c * kxy2 * self.k / (4 * Rs * (kx**2 * b * (a + c) + ky**2 * a * (b + c)))
+
+        return Q
 
     # ---------------- prenormalized E field ----------------
     def E_prenorm(self, Y):
@@ -93,7 +131,7 @@ class RectangularMode(CavityMode):
 
     # ---------------- normalized fields ----------------
     def E(self, Y):
-        if self.norm is None:
+        if self.norm_E is None:
             raise RuntimeError("Mode not normalized")
         return self.E_prenorm(Y)/np.sqrt(self.norm_E)
         

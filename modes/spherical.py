@@ -2,6 +2,7 @@ import numpy as np
 from scipy.special import spherical_jn, lpmv
 from .base import CavityMode
 from scipy.constants import c as c_cnst
+from scipy.constants import mu_0, epsilon_0
 from scipy.optimize import brentq
 from scipy.special import lpmv, spherical_jn
 
@@ -11,9 +12,13 @@ class SphericalMode(CavityMode):
     TMa, TMb, TEa, TEb
     Indices: m,n,p
     """
-    def __init__(self, indices, mode_name, cavity):
+    def __init__(self, indices, mode_name, epsilon_r, mu_r, sigma_w, cavity):
         self.m, self.n, self.p = indices
-        super().__init__(indices, mode_name, cavity)
+        self.mu_r = mu_r
+        self.epsilon_r = epsilon_r
+        self.sigma_w = sigma_w
+
+        super().__init__(indices, mode_name, epsilon_r, mu_r, sigma_w, cavity)
         self.root = self._find_root()
         self.k = self.k_calc()
         
@@ -57,6 +62,23 @@ class SphericalMode(CavityMode):
 
     def omega(self):
         return c_cnst * self.k
+    
+    # --------------- quality factor ----------------
+    def calculate_Q(self):
+        m, n, p = self.m, self.n, self.p
+        root_np = self.root
+
+        mu = mu_0 * self.mu_r
+        epsilon = epsilon_0 * self.epsilon_r
+        eta = np.sqrt(mu/epsilon)
+        Rs = np.sqrt(mu*self.omega()/(2*self.sigma_w))
+
+        if self.mode_name in ["TMa", "TMb"]:
+            Q = eta * (root_np - n * (n + 1)/root_np) / (2 * Rs) 
+        elif self.mode_name in ["TEa", "TEb"]:
+            Q = eta * root_np / (2 * Rs)
+
+        return Q
 
     # ---------------- prenormalized E field ----------------
     def E_prenorm(self, Y):   
@@ -147,7 +169,7 @@ class SphericalMode(CavityMode):
         
     # ---------------- normalized fields ----------------
     def E(self, Y):
-        if self.norm is None:
+        if self.norm_E is None:
             raise RuntimeError("Mode not normalized")
         return self.E_prenorm(Y)/np.sqrt(self.norm_E)
         

@@ -2,6 +2,7 @@ import numpy as np
 from scipy.special import jv, jvp, jn_zeros, jnp_zeros
 from .base import CavityMode
 from scipy.constants import c as c_cnst
+from scipy.constants import mu_0, epsilon_0
 
 class CylindricalMode(CavityMode):
     """
@@ -9,9 +10,12 @@ class CylindricalMode(CavityMode):
     TMa, TMb, TEa, TEb
     Indices: n,p,q
     """
-    def __init__(self, indices, mode_name, cavity):
+    def __init__(self, indices, mode_name, epsilon_r, mu_r, sigma_w, cavity):
         self.n, self.p, self.q = indices
-        super().__init__(indices, mode_name, cavity)
+        self.epsilon_r = epsilon_r
+        self.mu_r = mu_r
+        self.sigma_w = sigma_w
+        super().__init__(indices, mode_name, epsilon_r, mu_r, sigma_w, cavity)
         self.root = self._find_root()
         self.k = self.k_calc()
         
@@ -61,6 +65,25 @@ class CylindricalMode(CavityMode):
         
     def omega(self):
         return c_cnst * self.k
+    
+    # ---------------- quality factor ----------------
+    def calculate_Q(self):
+        R, L = self.cavity.R, self.cavity.L
+        n, p, q = self.indices
+ 
+        x_np = self.root
+
+        mu = mu_0 * self.mu_r
+        epsilon = epsilon_0 * self.epsilon_r
+        eta = np.sqrt(mu/epsilon)
+        Rs = np.sqrt(mu*self.omega()/(2*self.sigma_w))
+        
+        if self.mode_name in ["TMa", "TMb"]:
+            Q = eta * np.sqrt(x_np**2 + (q * np.pi * R / L)**2)/(2 * Rs * (1 + R / L))
+        elif self.mode_name in ["TEa", "TEb"]:
+            Q = eta * (x_np**2 + (q * np.pi * R / L)**2)**1.5 * (x_np**2 - n**2)/(2 * Rs * (x_np**4 + (n * q * np.pi * R / L)**2 + 2 * (R / L) * (q * np.pi * R / L)**2 * (x_np**2 - n**2)))
+
+        return Q
         
     # ---------------- prenormalized E field ----------------
     def E_prenorm(self, Y):

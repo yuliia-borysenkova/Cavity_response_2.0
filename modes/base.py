@@ -1,16 +1,23 @@
 import numpy as np
 from abc import ABC, abstractmethod
 from scipy.constants import c as c_cnst
+from scipy.constants import mu_0, epsilon_0
 
 class CavityMode(ABC):
-    def __init__(self, indices, mode_name, cavity):
+    def __init__(self, indices, mode_name, epsilon_r, mu_r, sigma_w, cavity):
         """
         indices: tuple of mode numbers (m,n,p) or (n,p,q) depending on cavity
         mode_name: string like 'TE', 'TM', 'TMa', 'TMb', etc.
+        epsilon_r: relative permittivity
+        mu_r: relative permeability
+        sigma_w: conductivity
         cavity: instance of cavity class
         """
         self.indices = indices
         self.mode_name = mode_name
+        self.epsilon_r = epsilon_r
+        self.mu_r = mu_r
+        self.sigma_w = sigma_w
         self.cavity = cavity
         self.norm = None
         
@@ -38,6 +45,11 @@ class CavityMode(ABC):
     def omega(self):
         """Angular frequency."""
         return c_cnst * self.k
+    
+    @abstractmethod
+    def calculate_Q(self):
+        """Calculate Q factor for this mode."""
+        pass
 
     @abstractmethod
     def E_prenorm(self, Y):

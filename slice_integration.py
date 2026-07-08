@@ -17,7 +17,7 @@ def parse_args():
     
     # Mode selection
     parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
-    parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity (even or odd)")
+    parser.add_argument("--mode-par", choices=["a", "b", "None"], default="b", help="Mode parity (even or odd)")
     parser.add_argument("--mode-ind", default="0,1,0", help="Mode indices as comma-separated values")
     
     # Simulation parameters
@@ -56,7 +56,7 @@ def main():
     theta_rad = np.radians(args.theta)
     phi_rad = np.radians(args.phi)
     
-    if args.mode_par is not None:
+    if args.mode_par != "None":
         mode_name = args.mode_fam + args.mode_par
     else:
         mode_name = args.mode_fam
@@ -81,10 +81,10 @@ def main():
         cavity = SphericalCavity(R=args.R)
         mode_class = SphericalMode
 
-    mode = mode_class(indices=mode_ind, mode_name=mode_name, cavity=cavity)
+    mode = mode_class(indices=mode_ind, mode_name=mode_name, mu_r=args.mu_r, epsilon_r=args.epsilon_r, sigma_w=args.sigma_w, cavity=cavity)
     mode.normalize()
 
-    Q = calculate_Q(mode, mu_r=args.mu_r, epsilon_r=args.epsilon_r, sigma_w=args.sigma_w)
+    Q = mode.calculate_Q()
     print(f"[INFO] Calculated Q factor: {Q:.2f}")
 
     # Save run config
