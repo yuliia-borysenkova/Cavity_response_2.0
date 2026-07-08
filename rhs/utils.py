@@ -5,9 +5,25 @@ import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from scipy.constants import c as c_cnst
+from scipy.constants import epsilon_0, mu_0
 import socket
 from datetime import datetime, timezone
 
+def calculate_Q(mode, mu_r, epsilon_r, sigma_w):
+    n, p, q = mode.indices
+    R = mode.cavity.R
+    L = mode.cavity.L
+    x_np = mode.root
+
+    mu = mu_0*mu_r
+    epsilon = epsilon_0*epsilon_r
+    eta = np.sqrt(mu/epsilon)
+    Rs = np.sqrt(mu_0*mode.omega()/(2*sigma_w))
+    
+    if mode.mode_name in ["TMa", "TMb"]:
+        return eta*np.sqrt(x_np**2+(q*np.pi*R/L)**2)/(2*Rs*(1+R/L))
+    elif mode.mode_name in ["TEa", "TEb"]:
+        return eta*(x_np**2+(q*np.pi*R/L)**2)**1.5*(x_np**2-n**2)/(2*Rs*(x_np**4+(n*q*np.pi*R/L)**2+2*(R/L)*(q*np.pi*R/L)**2*(x_np**2-n**2)))
 
 def compute_k_pol(theta, phi):
 

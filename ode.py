@@ -6,7 +6,7 @@ from ode.solver import solve_mode_amplitude
 from ode.utils import (
     load_rhs, save_amplitude, extend_rhs, compute_b, compute_U,
     load_from_config,
-    apply_onset_smoothing, update_config_with_Q, analytical_free_decay, compute_full_fourier,
+    apply_onset_smoothing, update_config_with_Q, analytical_free_decay, compute_full_fourier
 )
 from plotting import new_figure, save_figure
 
@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument("--phi",   type=float, default=0.0, help="Azimuthal angle of GW incidence (deg) ")
     parser.add_argument("--Ns",    type=int,   default=100, help="Number of spatial steps")
 
-    parser.add_argument("--Q",        type=float, default=1e5, help="Quality factor of the cavity mode")
+    parser.add_argument("--Q",        type=float, default=0.0, help="Quality factor of the cavity mode")
     parser.add_argument("--geometry", choices=["rectangular", "cylindrical", "spherical"], default="cylindrical", help="Cavity geometry type")
     parser.add_argument("--mode-fam", choices=["TE", "TM"], default="TM", help="Mode family (TE or TM)")
     parser.add_argument("--mode-par", choices=["a", "b", None], default="b", help="Mode parity: 'a' for even, 'b' for odd, None for no parity")
@@ -64,7 +64,14 @@ def main():
     save_dir  = os.path.join(args.results_dir, dir_name1, dir_name2)
     rhs_path  = os.path.join(save_dir, rhs_filename)
 
-    omega, norm = load_from_config(run_dir)
+    omega, Q = load_from_config(run_dir)
+
+    if args.Q != 0.0:
+        print("huh")
+        Q = args.Q
+        print(f"[INFO] Overriding Q from config: {Q: .2f}")
+    else:
+        print(f"[INFO] Using Q from config: {Q: .2f}")
 
     ts, RHS, pre_RHS = load_rhs(rhs_path)
 
@@ -111,10 +118,10 @@ def main():
 
     result = solve_mode_amplitude(
         ts=ts, RHS_fn=RHS_fn,        # <-- ts, not ts_ext
-        omega=omega, Q=args.Q,
+        omega=omega, Q=Q,
         )   
     # extend the solution in free-decay region using analytical formula
-    result = analytical_free_decay(result, ts_ext, omega, args.Q)
+    result = analytical_free_decay(result, ts_ext, omega, Q)
 
     print(f"[INFO] Computed in {time.time()-start:.2f} s.")
 
@@ -142,7 +149,7 @@ def main():
     print("[INFO] Computing magnetic mode coefficients...")
     c_t  = result['c']
     cD_t = result['cD']
-    b_t  = compute_b(c_t, cD_t, pre_RHS, args.Q, omega)
+    b_t  = compute_b(c_t, cD_t, pre_RHS, Q, omega)
     U    = compute_U(c_t, b_t)
 
     result['b'] = b_t
@@ -170,14 +177,14 @@ def main():
 
     f_cavity = omega / (2 * np.pi)
     t_match, _ = find_chirp_match_time(ts=ts_ext, f_cavity=f_cavity,
-                                        # data_dir=args.data_dir, data_file_name=args.data)
+                                        data_dir=args.data_dir, data_file_name=args.data)
 
     for y, label, ylabel, title, filename in plots:
         fig, ax = new_figure()
         ax.plot(ts_ext * 1e9, y, label=label)
 
         if t_match is not None and args.freq_match:
-             ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5,
+             ax.axvline(t_match * 1e9, linestyle="--", linewidth=1.5, 
                         color="darkred", label=r"$f_{\rm GW} = f_{\rm cav}$")
 
         ax.set_xlabel(r"$t$ [ns]")

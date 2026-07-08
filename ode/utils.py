@@ -4,7 +4,7 @@ from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 from modes import CylindricalMode, SphericalMode, RectangularMode
 from scipy import interpolate
 from scipy.constants import c as c_cnst
-from scipy.constants import epsilon_0
+from scipy.constants import epsilon_0, mu_0
 from scipy.signal.windows import tukey
 
 #Files loading/saving utilities
@@ -34,8 +34,8 @@ def load_from_config(run_dir):
     with open(cfg_path, "r") as f:
         cfg = json.load(f)
     omega = cfg['omega']
-    norm = cfg['norm']
-    return omega, norm
+    Q = cfg['Q']
+    return omega, Q
 
 def update_config_with_Q(config_file, args):
 

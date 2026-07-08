@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 from modes import RectangularMode, CylindricalMode, SphericalMode
 from rhs.slice_integration import SliceIntegration
+from rhs.utils import calculate_Q
 import numpy as np
 
 # ---------------- Argument parsing ----------------
@@ -28,6 +29,10 @@ def parse_args():
     parser.add_argument("--Ns", type=int, default=100, help="Number of samples for integration")
     parser.add_argument("--nproc", type=int, default=1, help="Number of processors for parallel execution")
     parser.add_argument("--method", choices=["vegas", "nquad"], default="nquad", help="Integration method")
+
+    parser.add_argument("--sigma_w", type=float, default=4e9, help="Conductivity of the cavity walls (S/m)")
+    parser.add_argument("--mu_r", type=float, default=1.0, help="Relative permeability of the cavity interior")
+    parser.add_argument("--epsilon_r", type=float, default=1.0, help="Relative permittivity of the cavity interior")
     
     # Rectangular cavity
     parser.add_argument("--a", type=float, default=0.1, help="Rectangular cavity x-dimension length (meters)")
@@ -79,11 +84,15 @@ def main():
     mode = mode_class(indices=mode_ind, mode_name=mode_name, cavity=cavity)
     mode.normalize()
 
+    Q = calculate_Q(mode, mu_r=args.mu_r, epsilon_r=args.epsilon_r, sigma_w=args.sigma_w)
+    print(f"[INFO] Calculated Q factor: {Q:.2f}")
+
     # Save run config
     run_info = {
         "args": vars(args),
         "omega": mode.omega(),
         "norm": mode.norm,
+        "Q": Q,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "hostname": socket.gethostname()
     }
