@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument("--results-dir", type=str, default="results", help="Path to results directory")
 
     parser.add_argument("--theta", type=float, default=45.0, help="Polar angle of GW incidence (deg)")
-    parser.add_argument("--phi",   type=float, default=0.0, help="Azimuthal angle of GW incidence (deg) ")
+    parser.add_argument("--phi",   type=float, default=0.0, help="Azimuthal angle of GW incidence (deg)")
     parser.add_argument("--Ns",    type=int,   default=100, help="Number of spatial steps")
 
     parser.add_argument("--Q",        type=float, default=0.0, help="Quality factor of the cavity mode")
@@ -68,7 +68,6 @@ def main():
     omega, Q = load_from_config(run_dir)
 
     if args.Q != 0.0:
-        print("huh")
         Q = args.Q
         print(f"[INFO] Overriding Q from config: {Q: .2f}")
     else:
@@ -99,7 +98,10 @@ def main():
     ax.plot(ts * 1e9, RHS[:len(ts)], label="RHS", linewidth=1.5)
     ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
     ax.set_ylabel(r"$\mathrm{RHS}(t)$")
-    ax.set_title(rf"$\mathrm{{RHS}}(t)$ after filters for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
+    if args.mode:
+        ax.set_title(rf"$\mathrm{{RHS}}(t)$ after filters for {args.geometry} cavity mode {args.mode};"+f"\n waveform file: {args.data}" )
+    else:
+        ax.set_title(rf"$\mathrm{{RHS}}(t)$ after filters for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
     ax.legend()
     save_figure(fig, os.path.join(save_dir, f"RHS(t)_filtered.png"))
 
@@ -108,7 +110,10 @@ def main():
     ax.plot(ts * 1e9, pre_RHS[:len(ts)], label="pre_RHS", linewidth=1.5)
     ax.set_xlabel(r"$t\,[\mathrm{ns}]$")
     ax.set_ylabel(r"$\mathrm{preRHS}(t)$")
-    ax.set_title(rf"$\mathrm{{preRHS}}(t)$ after filters for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
+    if args.mode:
+        ax.set_title(rf"$\mathrm{{preRHS}}(t)$ after filters for {args.geometry} cavity mode {args.mode};"+f"\n waveform file: {args.data}" )
+    else:
+        ax.set_title(rf"$\mathrm{{preRHS}}(t)$ after filters for {args.geometry} cavity mode {mode_name} [{args.mode_ind}];"+f"\n waveform file: {args.data}" )
     ax.legend()
     save_figure(fig, os.path.join(save_dir, f"pre_RHS(t)_filtered.png"))
 
@@ -159,8 +164,9 @@ def main():
     print("[INFO] Magnetic mode coefficients computed.")
 
     #editing json file to add Q
-    output_file = os.path.join(save_dir, f"config_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.json")
-    update_config_with_Q(output_file, args)
+    if not(args.mode):
+        output_file = os.path.join(save_dir, f"config_{args.geometry}_{mode_name}_{args.mode_ind}_{args.data}.json")
+        update_config_with_Q(output_file, args)
 
     save_amplitude(save_dir, result)
 

@@ -58,15 +58,17 @@ def main():
             s11_new
         )
 
-    F_dict = {"TMb_0,1,0": -0.0081, "TMb_0,1,1": -0.0116,"TMb_0,1,2": -0.0120}
-    freq_dict = {"TMb_0,1,0": 0.5e9, "TMb_0,1,1": 582.960e6, "TMb_0,1,2": 780.685e6}
+    # F_dict = {"TMb_0,1,0": -0.0081, "TMb_0,1,1": -0.0116,"TMb_0,1,2": -0.0120}
+    F_dict = {"TM010_compatible": -0.0081, "TM011_compatible": -0.0116,"TM012_compatible": -0.0120}
+    # freq_dict = {"TMb_0,1,0": 0.5e9, "TMb_0,1,1": 582.960e6, "TMb_0,1,2": 780.685e6}
 
     # s11_freqs, s11_vals = rebuild_s11_grid(s11_freqs, s11_vals, freq_dict)
     I_gw_modes = []
 
     for mode_name, F_m1 in F_dict.items():
 
-        folder_name = (f"{args.geometry}_{mode_name}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}")
+        # folder_name = (f"{args.geometry}_{mode_name}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}")
+        folder_name = f"{mode_name}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}"
 
         mode_dir = os.path.join(args.results_dir, folder_name)
         data_dir = os.path.join(mode_dir, f"DATA_{args.data}")
@@ -74,9 +76,13 @@ def main():
 
         pkg = np.load(file_path, allow_pickle=True)
 
+        freq_m = np.sqrt(pkg["omega_d"]**2 + pkg["alpha"]**2) / (2*np.pi)
+
         freqs = pkg["freqs"]
-        dt = pkg["t"][1] - pkg["t"][0]
+        dt = pkg["ts"][1] - pkg["ts"][0]
         c_hat_num = pkg["c_hat_numerical"]
+
+        print(F_m1)
 
         threshold = 8.5e-2
         _, freqs_exceed = compare_contributions(pkg, c_hat_num, freqs, s11_freqs, threshold)
@@ -95,8 +101,10 @@ def main():
             print(f"[INFO] {len(freqs_exceed)} frequencies exceed {threshold:g}. Using Fourier interpolation for the numerical part.")
             c_hat_num_interp = fourier_interp(c_hat_num, freqs * 2 * np.pi, s11_freqs * 2 * np.pi, dt)
             c_hat = c_hat_num_interp + c_hat_ana
+            
 
-        I_gw_modes.append(np.sqrt(epsilon_0/mu_0) * F_m1 * c_hat * (freq_dict[mode_name] / s11_freqs) * 1j)
+        I_gw_modes.append(np.sqrt(epsilon_0/mu_0) * F_m1 * c_hat * (freq_m / s11_freqs) * 1j)
+
 
         print("[INFO] Mode", mode_name, "done.")
 
@@ -108,19 +116,21 @@ def main():
 
     V_c_modes = (I_gw_modes / (Y_w + Y_c))
     V_meas_modes = V_c_modes * np.sqrt(np.log(args.a / args.b) / (2 * np.pi))
-    P_w_modes = (np.abs(I_gw_modes) ** 2 / (2 * np.abs(Y_w + Y_c) ** 2) * np.real(Y_w))
+    P_w_modes = (np.abs(I_gw_modes) ** 2 / (np.abs(Y_w + Y_c) ** 2) * np.real(Y_w))
 
     V_c = I_gw / (Y_w + Y_c)
     V_meas = V_c * np.sqrt(np.log(args.a / args.b) / (2 * np.pi))
-    P_w = (np.abs(I_gw) ** 2 / (2 * np.abs(Y_w + Y_c) ** 2) * np.real(Y_w))
+    P_w = (np.abs(I_gw) ** 2 / (np.abs(Y_w + Y_c) ** 2) * np.real(Y_w))
 
     np.save(
         os.path.join(args.results_dir, "output.npy"),
         {
             "freqs": s11_freqs,
             "V_meas": V_meas,
+            "V_meas_modes": V_meas_modes,
             "P_w": P_w,
-            "I_gw": I_gw
+            "I_gw": I_gw,
+            "I_gw_modes": I_gw_modes
         }
     )
 

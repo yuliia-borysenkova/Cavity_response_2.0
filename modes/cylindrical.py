@@ -153,14 +153,14 @@ class CylindricalMode(CavityMode):
             
         elif self.mode_name == 'TMa':
                 
-            Br   = - 1 / (k**2 - (q * np.pi / L)**2 ) * (n / Y[0]) * jv(n, root_np * Y[0] / R) * np.cos(q * np.pi / L * Y[2]) * np.cos(n * Y[1])
-            Bphi =  1 / (k**2 - (q * np.pi / L)**2 ) * (root_np / R) * jvp(n, root_np * Y[0] / R) * np.cos(q * np.pi / L * Y[2]) * np.sin(n * Y[1])
+            Br   = - k / (k**2 - (q * np.pi / L)**2 ) * (n / Y[0]) * jv(n, root_np * Y[0] / R) * np.cos(q * np.pi / L * Y[2]) * np.cos(n * Y[1])
+            Bphi =  k / (k**2 - (q * np.pi / L)**2 ) * (root_np / R) * jvp(n, root_np * Y[0] / R) * np.cos(q * np.pi / L * Y[2]) * np.sin(n * Y[1])
             Bz   =  0.0
             
         elif self.mode_name == 'TMb':
                 
-            Br   = 1 / (k**2 - (q * np.pi / L)**2 ) * (n / Y[0]) * jv(n, root_np * Y[0] / R) * np.cos(q * np.pi / L * Y[2]) * np.sin(n * Y[1])
-            Bphi = 1 / (k**2 - (q * np.pi / L)**2 ) * (root_np / R) * jvp(n, root_np * Y[0] / R) * np.cos(q * np.pi / L * Y[2]) * np.cos(n * Y[1])
+            Br   = k / (k**2 - (q * np.pi / L)**2 ) * (n / Y[0]) * jv(n, root_np * Y[0] / R) * np.cos(q * np.pi / L * Y[2]) * np.sin(n * Y[1])
+            Bphi = k / (k**2 - (q * np.pi / L)**2 ) * (root_np / R) * jvp(n, root_np * Y[0] / R) * np.cos(q * np.pi / L * Y[2]) * np.cos(n * Y[1])
             Bz   =  0.0
 
         return np.array([Br, Bphi, Bz])

@@ -121,6 +121,7 @@ def extract_mode(mode_path, threshold=True):
     
     norm = dV * np.linalg.norm(Efield) ** 2 # in V^2*m
 
+    print(norm)
     Efield = Efield / np.sqrt(norm)
 
     V = len(Efield) * dV

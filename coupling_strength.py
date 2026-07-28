@@ -4,9 +4,11 @@ import os
 
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
 from modes import CylindricalMode, SphericalMode, RectangularMode
+from scipy.interpolate import RegularGridInterpolator
+from scipy.integrate import nquad
 
 from coupling.coupling import CouplingStrength
-from coupling.utils import mean_calc
+from coupling.utils import mean_calc, load_B
 
 
 # ---------------- Argument parsing ----------------
@@ -34,11 +36,30 @@ def parse_args():
     parser.add_argument("--N-theta", type=int, default=10, help="Number of theta angles to sample")
     parser.add_argument("--N-phi", type=int, default=1, help="Number of phi angles to sample")
     parser.add_argument("--nproc", type=int, default=1, help="Number of processors for parallel execution")
-    
+
+    # 
+    parser.add_argument("--B-dist", type=str, default="", help="Add a non-homogeneous distribution of the magnetic field")
     # Results directory
     parser.add_argument("--save-dir", type=str, default="results/coupling")
     
     return parser.parse_args()
+
+class BField:
+    def __init__(self, Br_interp, Bz_interp, center):
+        self.Br_interp = Br_interp
+        self.Bz_interp = Bz_interp
+        self.center = center
+
+    def __call__(self, Y):
+        Y = Y - self.center
+
+        r, phi, z = Y
+
+        Br = self.Br_interp((z, r)).item()
+        Bz = self.Bz_interp((z, r)).item()
+
+
+        return np.array([Br, 0.0, Bz])
 
 # ---------------- Main CLI ----------------
 def main():
@@ -62,16 +83,59 @@ def main():
         mode_class = RectangularMode
         mode_name_arr = [args.mode_fam]
 
+    center = cavity.center()
+
+    if args.B_dist != "":
+        filename = "12T-96mm Cylinder Stray Field Data (M23941-J28).xlsx"
+
+        r, z, Br, Bz = load_B(filename)
+
+
+        Bz_interp = RegularGridInterpolator(
+            (z, r), Bz,
+            bounds_error=False,
+            fill_value=0.0
+        )
+
+        Br_interp = RegularGridInterpolator(
+            (z, r), Br,
+            bounds_error=False,
+            fill_value=0.0
+        )
+
+        def integrand(r, z):
+
+            point = np.array([z, r])
+
+            bz = Bz_interp(point).item()
+            br = Br_interp(point).item()
+
+            return (br**2 + bz**2) * 2 * np.pi * r   # Jacobian
+
+        B = BField(Br_interp, Bz_interp, center)
+        norm, _ = nquad(integrand,
+                    [
+                        [0.0, args.R],
+                        [-args.L/2, args.L/2],
+                    ],
+                    opts={"epsabs":1e-4, "epsrel":1e-4}
+                )
+
+    else:
+        B = np.array([0.0, 0.0, 1.0])
+        norm = np.linalg.norm(B)**2 * cavity.volume()
+
     result = []
     theta_vals = np.linspace(0.0, np.pi, args.N_theta)
     phi_vals = np.linspace(0.0, 2.0 * np.pi, args.N_phi) if args.N_phi > 0 else np.zeros(1)
 
     for mode_name in mode_name_arr:
-        mode = mode_class(indices=mode_ind, mode_name=mode_name, cavity=cavity)
+        mode = mode_class(indices=mode_ind, mode_name=mode_name, cavity=cavity, mu_r=1.0, epsilon_r=1.0, sigma_w=1.0)
         mode.normalize()
 
-        res = CouplingStrength(cavity=cavity, mode=mode, theta_vals=theta_vals, phi_vals=phi_vals, pol=args.pol, nproc=args.nproc)
-        result.append(res.run())
+        res = CouplingStrength(cavity=cavity, mode=mode, theta_vals=theta_vals, phi_vals=phi_vals, pol=args.pol, B=B, nproc=args.nproc)
+        current_result = res.run() / np.sqrt(norm)
+        result.append(current_result)
 
     eta_a = result[0]
     eta_b = result[1] if len(result) > 1 else 0.0
@@ -87,7 +151,7 @@ def main():
 
     print("[INFO] Results for coupling strength:")
     print(f"⟨η(θ, φ)⟩ = {mean_eta:.4f}, ηₘₐₓ = {max_eta:.4f}")
-    print(f"⟨C(θ, φ)⟩=⟨η²(θ, φ)⟩ = {mean_C:.4f}, Cₘₐₓ = {max_C:.4f}")
+    print(f"⟨C(θ, φ)⟩=⟨η²(θ, φ)⟩ = {mean_C:.6f}, Cₘₐₓ = {max_C:.4f}")
 
     #Save data and all plots
     folder_ind_str = args.mode_ind

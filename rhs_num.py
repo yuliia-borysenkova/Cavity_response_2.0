@@ -47,7 +47,7 @@ def main():
     mode_path = os.path.join(args.mode_dir, args.mode + ".csv")
 
        
-    dir1_name = f"{args.mode}_theta={args.theta}_phi={args.phi}"
+    dir1_name = f"{args.mode}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}"
     dir2_name = f"DATA_{args.data}"
     save_dir = os.path.join(args.results_dir, dir1_name, dir2_name)
     os.makedirs(save_dir, exist_ok=True)

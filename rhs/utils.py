@@ -5,42 +5,41 @@ import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from scipy.constants import c as c_cnst
-from scipy.constants import epsilon_0, mu_0
 import socket
 from datetime import datetime, timezone
 
-def calculate_Q(mode, mu_r, epsilon_r, sigma_w):
-    n, p, q = mode.indices
-    R = mode.cavity.R
-    L = mode.cavity.L
-    x_np = mode.root
-
-    mu = mu_0*mu_r
-    epsilon = epsilon_0*epsilon_r
-    eta = np.sqrt(mu/epsilon)
-    Rs = np.sqrt(mu_0*mode.omega()/(2*sigma_w))
-    
-    if mode.mode_name in ["TMa", "TMb"]:
-        return eta*np.sqrt(x_np**2+(q*np.pi*R/L)**2)/(2*Rs*(1+R/L))
-    elif mode.mode_name in ["TEa", "TEb"]:
-        return eta*(x_np**2+(q*np.pi*R/L)**2)**1.5*(x_np**2-n**2)/(2*Rs*(x_np**4+(n*q*np.pi*R/L)**2+2*(R/L)*(q*np.pi*R/L)**2*(x_np**2-n**2)))
 
 def compute_k_pol(theta, phi):
 
-    k = -np.array([np.sin(theta)*np.cos(phi), 
-                  np.sin(theta)*np.sin(phi), 
-                  np.cos(theta)
-                 ])
+    # k = -np.array([np.sin(theta)*np.cos(phi), 
+    #               np.sin(theta)*np.sin(phi), 
+    #               np.cos(theta)
+    #              ])
+
+    # e1 = np.array([-np.sin(phi), 
+    #                np.cos(phi), 
+    #                0.0
+    #              ])
+
+    # e2 = np.array([np.cos(theta)*np.cos(phi), 
+    #                np.cos(theta)*np.sin(phi), 
+    #                -np.sin(theta)
+    #              ])
+
+    k = np.array([np.sin(theta)*np.cos(phi), 
+                   np.sin(theta)*np.sin(phi), 
+                   np.cos(theta)
+                  ])
 
     e1 = np.array([-np.sin(phi), 
                    np.cos(phi), 
                    0.0
                  ])
 
-    e2 = np.array([np.cos(theta)*np.cos(phi), 
-                   np.cos(theta)*np.sin(phi), 
-                   -np.sin(theta)
-                 ])
+    e2 = -np.array([np.cos(theta)*np.cos(phi), 
+                    np.cos(theta)*np.sin(phi), 
+                    -np.sin(theta)
+                     ])
 
     return k, e1, e2
 
@@ -48,27 +47,36 @@ def decompose_B(B, k, e1, e2):
     """
     Compute B_plus and B_cross polarizations perpendicular to k
     """
-    Bperp = B - np.dot(B, k) * k
-    B_plus  = np.dot(Bperp, e2) * e1 + np.dot(Bperp, e1) * e2
-    B_cross = -np.dot(Bperp, e1) * e1 + np.dot(Bperp, e2) * e2
+    B_plus  = np.dot(B, e2) * e1 + np.dot(B, e1) * e2
+    B_cross = -np.dot(B, e1) * e1 + np.dot(B, e2) * e2
     
     return B_plus, B_cross
 
 def make_jeff(B, cavity, hplus, hcross, k, e1, e2):
 
-    B_plus, B_cross = decompose_B(B, k, e1, e2)
     center = cavity.center()
 
     def tau(Y, t):
         return t - np.vdot(k, cavity.native_to_cart(Y) - center) / c_cnst
+    
+    def get_B(Y):
+        return B(Y) if callable(B) else B
 
-    def jeff_from_B(B, h):
-        def jeff(Y, t):
-            return cavity.cart_vec_to_native(h(tau(Y, t)) * B, Y)
-        return jeff
+    def jeff_from_B():
+        
+        def jeff_plus(Y, t):
+            B_here = get_B(Y)
+            B_plus, B_cross = decompose_B(B_here, k, e1, e2)
+            return hplus(tau(Y, t)) * B_plus # Remember to fix this for the normal case
+        
+        def jeff_cross(Y, t):
+            B_here = get_B(Y)
+            B_plus, B_cross = decompose_B(B_here, k, e1, e2)
+            return hcross(tau(Y, t)) * B_cross # Remember to fix this for the normal case
+    
+        return jeff_plus, jeff_cross
 
-    jeff_plus  = jeff_from_B(B_plus,  hplus)
-    jeff_cross = jeff_from_B(B_cross, hcross)
+    jeff_plus, jeff_cross = jeff_from_B()
 
     def jeff_full(Y, t):
         return jeff_plus(Y, t) + jeff_cross(Y, t)

@@ -1,5 +1,5 @@
 import numpy as np
-import vegas
+# import vegas
 import scipy.integrate as integrate
 
 def overlap_nquad(E1, E2, geometry, *, epsabs=1e-8, epsrel=1e-6, limit=80, complex_value=True):

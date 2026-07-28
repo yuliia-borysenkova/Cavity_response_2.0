@@ -14,16 +14,16 @@ def compute_coupling(args):
     def E1(Y): return mode.E(Y)
     def E2(Y): return jeff(Y, t)
 
-    coupling = cavity.overlap_integral(E1, E2, method="nquad", epsabs=1e-8, epsrel=1e-6, limit=80, complex_value=True) / np.sqrt(V)
+    coupling = cavity.overlap_integral(E1, E2, method="nquad", epsabs=1e-4, epsrel=1e-4, limit=50, complex_value=True)
 
     return coupling
 
 
 class CouplingStrength:
-    def __init__(self, cavity, mode, theta_vals, phi_vals: int = 0, B=(0.0, 0.0, 1.0), pol: str = "cross", nproc: int = 1):
+    def __init__(self, cavity, mode, theta_vals, phi_vals: int = 0, B=np.array([0.0, 0.0, 1.0]), pol: str = "cross", nproc: int = 1):
         self.cavity = cavity
         self.mode = mode
-        self.B = np.asarray(B, dtype=float)
+        self.B = B
         self.pol = str(pol)
         self.nproc = int(nproc)
         self.theta_vals = theta_vals

@@ -34,7 +34,10 @@ def load_from_config(run_dir):
     with open(cfg_path, "r") as f:
         cfg = json.load(f)
     omega = cfg['omega']
-    Q = cfg['Q']
+    if 'Q' in cfg:
+        Q = cfg['Q']
+    else:
+        Q = 0.0
     return omega, Q
 
 def update_config_with_Q(config_file, args):
