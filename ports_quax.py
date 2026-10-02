@@ -2,7 +2,7 @@ import os, argparse, time
 import numpy as np
 import scipy.io
 from scipy.constants import epsilon_0, mu_0
-from output.utils import create_plot, compare_contributions, rebuild_s11_grid, fourier_interp, load_s11, replace_frequency_region
+from output.utils import create_plot, compare_contributions, rebuild_s11_grid, fourier_interp, load_s11, replace_frequency_region, load_s11_quax
 
 def parse_args():
 
@@ -19,10 +19,10 @@ def parse_args():
 
     parser.add_argument("--Ns", type=int, default=100)
 
-    parser.add_argument("--epsilon-r", type=float, default=2.08)
+    parser.add_argument("--epsilon-r", type=float, default=2.2)
 
-    parser.add_argument("--a", type=float, default=2.11e-3)
-    parser.add_argument("--b", type=float, default=0.635e-3)
+    parser.add_argument("--a", type=float, default=2.2e-3)
+    parser.add_argument("--b", type=float, default=0.51e-3)
 
     return parser.parse_args()
  
@@ -36,39 +36,25 @@ def main():
 
     os.makedirs(args.results_dir, exist_ok=True)
 
-    s11_freqs, s11_vals = load_s11(
-    os.path.join(args.cavity_data, "s11 sweep 0.475-0.775 GHz (step 0.5 kHz).mat")
-    )
+    # s11_freqs, s11_vals = load_s11_quax(
+    #     ["S22cav_modo1_2026-07-24_17-17-07.txt",
+    #      "S22cav_modo2_2026-07-24_17-25-30.txt",
+    #      "S22cav_modo3_2026-07-24_17-36-51.txt"
+    #     ]
+    # )
 
-    # Replacement files
-    replacement_files = [
-        os.path.join(args.cavity_data, "TM010_17062026.mat"),
-        os.path.join(args.cavity_data, "TM011_17062026.mat"),
-        os.path.join(args.cavity_data, "TM012_17062026.mat"),
-    ]
+    data = np.load("S22cav_normalized.npy")
 
-    # Sequentially replace each window
-    for fname in replacement_files:
-        f_new, s11_new = load_s11(fname)
+    s11_freqs = data[:, 0].real
+    s11_vals = data[:, 1]
 
-        s11_freqs, s11_vals = replace_frequency_region(
-            s11_freqs,
-            s11_vals,
-            f_new,
-            s11_new
-        )
-
-    F_dict = {"TMb_0,1,0": -0.0081, "TMb_0,1,1": -0.0116,"TMb_0,1,2": -0.0120}
-    # F_dict = {"TM010_compatible": -0.0081, "TM011_compatible": -0.0116,"TM012_compatible": -0.0120}
-    # freq_dict = {"TMb_0,1,0": 0.5e9, "TMb_0,1,1": 582.960e6, "TMb_0,1,2": 780.685e6}
-
-    # s11_freqs, s11_vals = rebuild_s11_grid(s11_freqs, s11_vals, freq_dict)
+    F_dict = {"TM010_tuners_0deg_E_D_fields": 0.0806842, "TM011_tuners_0deg_E_D_fields": 0.0832824,"TM012_tuners_0deg_E_D_fields": 0.119187}
     I_gw_modes = []
 
     for mode_name, F_m1 in F_dict.items():
 
-        folder_name = (f"{args.geometry}_{mode_name}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}")
-        # folder_name = f"{mode_name}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}"
+        # folder_name = (f"{args.geometry}_{mode_name}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}")
+        folder_name = f"{mode_name}_theta={args.theta}_phi={args.phi}_Ns={args.Ns}"
 
         mode_dir = os.path.join(args.results_dir, folder_name)
         data_dir = os.path.join(mode_dir, f"DATA_{args.data}")
@@ -82,10 +68,9 @@ def main():
         dt = pkg["ts"][1] - pkg["ts"][0]
         c_hat_num = pkg["c_hat_numerical"]
 
-        # print(F_m1)
+        threshold = 8.5e-2
+        _, freqs_exceed = compare_contributions(pkg, c_hat_num, freqs, s11_freqs, threshold)
 
-        # threshold = 8.5e-2
-        # _, freqs_exceed = compare_contributions(pkg, c_hat_num, freqs, s11_freqs, threshold)
 
         omegas = s11_freqs * 2 * np.pi
         s = pkg['alpha'] + 1j * omegas
@@ -93,16 +78,16 @@ def main():
                         (pkg['A_n'] * s + pkg['B_n'] * pkg['omega_d']) / \
                         (s**2 + pkg['omega_d']**2)
 
-        # if freqs_exceed.size == 0:
-        #     print("[INFO] No frequencies exceed the threshold. Using analytical part only.")
-        #     c_hat = c_hat_ana
+        if freqs_exceed.size == 0:
+            print("[INFO] No frequencies exceed the threshold. Using analytical part only.")
+            c_hat = c_hat_ana
 
-        # else:
-        #     print(f"[INFO] {len(freqs_exceed)} frequencies exceed {threshold:g}. Using Fourier interpolation for the numerical part.")
-        #     c_hat_num_interp = fourier_interp(c_hat_num, freqs * 2 * np.pi, s11_freqs * 2 * np.pi, dt)
-        #     c_hat = c_hat_num_interp + c_hat_ana
+        else:
+            print(f"[INFO] {len(freqs_exceed)} frequencies exceed {threshold:g}. Using Fourier interpolation for the numerical part.")
+            c_hat_num_interp = fourier_interp(c_hat_num, freqs * 2 * np.pi, s11_freqs * 2 * np.pi, dt)
+            c_hat = c_hat_num_interp + c_hat_ana
+        # c_hat = c_hat_ana
             
-        c_hat = c_hat_ana
 
         I_gw_modes.append(np.sqrt(epsilon_0/mu_0) * F_m1 * c_hat * (freq_m / s11_freqs) * 1j)
 
@@ -138,10 +123,6 @@ def main():
     mode_names = list(F_dict.keys())
 
     mode_labels = [r"TM$_{010}$", r"TM$_{011}$", r"TM$_{012}$"]
-                   
-    #         rf"TM$_{{{name.split('_')[1].replace(',', '')}}}$"
-    #         for name in mode_names
-    # ]
 
     voltage_mode_curves = [
         {
@@ -182,7 +163,7 @@ def main():
     plots = [
 
         {
-            "filename": os.path.join(args.results_dir, "voltage_spectrum.pdf"),
+            "filename": os.path.join(args.results_dir, "voltage_spectrum.png"),
             "xlabel": r"Frequency $f$ [GHz]",
             "ylabel": r"Measured voltage spectrum $|V_{\mathrm{meas}}|$ [V Hz$^{-1}$]",
             "title": "Measured voltage spectrum",
@@ -221,7 +202,7 @@ def main():
         },
 
                 {
-            "filename": os.path.join(args.results_dir, "cavity_voltage_spectrum.pdf"),
+            "filename": os.path.join(args.results_dir, "cavity_voltage_spectrum.png"),
             "xlabel": r"Frequency $f$ [GHz]",
             "ylabel": r"Cavity voltage spectrum $|V_{\mathrm{c}}|$ [V Hz$^{-1}$]",
             "title": "Cavity voltage spectrum",
@@ -260,7 +241,7 @@ def main():
         },
 
         {
-            "filename": os.path.join(args.results_dir, "energy_spectral_density.pdf"),
+            "filename": os.path.join(args.results_dir, "energy_spectral_density.png"),
             "xlabel": r"Frequency $f$ [GHz]",
             "ylabel": r"Energy spectral density [J Hz$^{-1}$]",
             "title": "Energy spectral density",
@@ -322,6 +303,7 @@ def main():
             "xlabel": "Frequency [GHz]",
             "ylabel": r"$|S_{11}|, \mathrm{dB}$",
             "title": r"$|S_{11}|$ as a function of frequency",
+            # "xlim": [8.78, 8.78175],
             "curves": [
                 {
                     "x": s11_freqs / 1e9,
@@ -331,6 +313,7 @@ def main():
                     },
                 }
             ],
+            # "vertical_lines": [8.73711966, 8.78083979, 8.84118240],
         },
 
         {
@@ -338,17 +321,18 @@ def main():
             "xlabel": "Frequency [GHz]",
             "ylabel": r"$\mathrm{phase}[S_{11}], ^\circ$",
             "title": r"$S_{11}$ phase as a function of frequency",
-            # "xlim": [0.583-0.0001, 0.583+0.00008],
+            # "xlim": [8.78, 8.78175],
             "curves": [
                 {
                     "x": s11_freqs / 1e9,
-                    "y": np.unwrap(np.angle(s11_vals)) / np.pi * 180,
+                    "y": np.angle(s11_vals) / np.pi * 180,
                     "plot_kwargs": {
                         "color": "#a00000"
                     },
                 }
 
             ],
+            # "vertical_lines": [8.73711966, 8.78083979, 8.84118240],
         },
 
     ]

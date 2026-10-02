@@ -93,6 +93,7 @@ def main():
     print(f"[INFO] Computed in {time.time()-start: .2f} s.")
     
     np.save(output_path + ".npy", data)
+    print(len(data[0]))
     print(f"[INFO] Saved waveform data to {output_path}.npy")
 
 if __name__ == "__main__":

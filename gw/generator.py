@@ -106,6 +106,8 @@ class WaveformPipeline:
             plot_waveform(data, (r"$h_+$ final " + self.cfg.approximant, r"$h_\times$ final " + self.cfg.approximant),
                           title = f"GW waveform for a m1 = {m1 / ratio}, m2 = {m2 / ratio} solar mass BH merger",
                           save_path=self.output_path, display=self.cfg.display)
+            
+        print(len(data[0]))
 
         return data
 

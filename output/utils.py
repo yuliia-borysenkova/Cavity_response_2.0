@@ -118,6 +118,10 @@ def create_plot(spec):
     if spec.get("legend", False):
         ax.legend()
 
+    if spec.get("vertical_lines") is not None:
+        for vline in spec["vertical_lines"]:
+            ax.axvline(x=vline, linestyle='--', linewidth=1, color='black', alpha=0.7)
+
     save_figure(fig, spec["filename"])
 
 def load_s11(filename):
@@ -140,6 +144,16 @@ def load_s11(filename):
         )
 
     return freqs, s11
+
+import numpy as np
+
+def load_s11_quax(filenames):
+    data = np.vstack([np.loadtxt(filename) for filename in filenames])
+
+    s11_freqs = data[:, 0]
+    s11_values = data[:, 1] + 1j * data[:, 2]
+
+    return s11_freqs, s11_values
 
 
 def replace_frequency_region(base_freqs, base_vals, replacement_freqs, replacement_vals):

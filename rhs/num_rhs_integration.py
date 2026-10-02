@@ -11,10 +11,11 @@ def compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plusdir, B_crossdir, hplus,
     xp_num = len(xps)
     
     EE = lambda xp: V * np.mean(stats.norm.pdf(xpar, loc = xp, scale = ell)[:,None] * np.conjugate(Efield), axis = 0) # in V*m
+
     EEs = np.array([EE(xp) for xp in xps])
             
-    E_plus = np.einsum('ij,j->i', np.conjugate(EEs), B_plusdir)
-    E_cross = np.einsum('ij,j->i', np.conjugate(EEs), B_crossdir)
+    E_plus = np.einsum('ij,j->i', EEs, B_plusdir)
+    E_cross = np.einsum('ij,j->i', EEs, B_crossdir)
                 
     EEsDD = (EEs[2:] - 2 * EEs[1:-1] + EEs[:-2]) / (xps[1] - xps[0]) ** 2 # in V/m
     EEsqr = lambda xp: V * np.mean(stats.norm.pdf(xpar, loc = xp, scale = ell)[:,None] ** 2 * np.abs(Efield) ** 2, axis = 0) # in V^2
@@ -33,58 +34,58 @@ def compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plusdir, B_crossdir, hplus,
 
     return overlaps_sum1d.real, errs_sum1d
 
-#vectorised compute_num_rhs, with vectorised interpolation of hplus and hcross. More efficient and cleaner
-"""
-def compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plusdir, B_crossdir, hplus_arr, hcross_arr, t_data, ell):
-    xp_num = len(xps)
+def extract_mode_quax(mode_path, threshold=True):
 
-    # --- E-field slice averages (unchanged, already vectorised) ---
-    EE = V * np.mean(
-        stats.norm.pdf(xpar[:, None], loc=xps[None, :], scale=ell)[:, :, None]
-        * np.conj(Efield[:, None, :]),
-        axis=0,
-    )  # shape (Ns, 3)
+    def conv(fld):
+        if fld.endswith('i'):
+            return complex(fld[:-1] + 'j')
+        else:
+            return float(fld)
 
-    E_plus  = EE @ np.conj(B_plusdir)   # shape (Ns,)
-    E_cross = EE @ np.conj(B_crossdir)  # shape (Ns,)
+    cavity_data = np.loadtxt(mode_path, delimiter = ',', comments = r'%', converters = conv, dtype = float, skiprows=1)
+    # cavity_data[:,:3] *= 1e-3 # rescale coordinates from mm to m
 
-    # --- Vectorised retarded-time interpolation ---
-    # t_ret[i_t, i_x] = ts[i_t] - xps[i_x] / c
-    t_ret = ts[:, None] - xps[None, :] / c_cnst   # shape (Nt, Ns)
+    order = np.lexsort((
+    cavity_data[:, 0].real,  # x: fastest
+    cavity_data[:, 1].real,  # y
+    cavity_data[:, 2].real   # z: slowest
+    ))
 
-    hp  = np.interp(t_ret.ravel(), t_data, hplus_arr,  left=0.0, right=0.0).reshape(t_ret.shape)
-    hc  = np.interp(t_ret.ravel(), t_data, hcross_arr, left=0.0, right=0.0).reshape(t_ret.shape)
+    cavity_data = cavity_data[order]
 
-    # --- Overlap integral ---
-    # shape (Nt,)
-    overlap = (xps[-1] - xps[0]) / xp_num * np.sum(
-        hp * E_plus[None, :] + hc * E_cross[None, :], axis=1
-    )
+    coords = []
+    Efield = []
+    for data in cavity_data:
+        if not np.isnan(data[3]):
+            coords.append(data[:3].real)
+            Efield.append(data[3:6])
+    coords = np.array(coords) # in m
 
-    # --- Error (vectorised) ---
-    EEsDD   = (EE[2:] - 2*EE[1:-1] + EE[:-2]) / (xps[1] - xps[0])**2
-    EEsqr   = V * np.mean(
-        stats.norm.pdf(xpar[:, None], loc=xps[None, :], scale=ell)[:, :, None]**2
-        * np.abs(Efield[:, None, :])**2,
-        axis=0,
-    )
-    EE_sys  = np.abs(EEsDD) * ell**2 / 2
-    EE_stat = np.sqrt((V * EEsqr - np.abs(EE)**2) / num)
-    EE_errs = np.sqrt(EE_sys**2 + EE_stat[1:-1]**2)
+    Efield = np.array(Efield) # in V/m
 
-    hp_mid = np.interp((ts[:, None] - xps[1:-1][None, :] / c_cnst).ravel(),
-                       t_data, hplus_arr, left=0.0, right=0.0).reshape(len(ts), -1)
-    hc_mid = np.interp((ts[:, None] - xps[1:-1][None, :] / c_cnst).ravel(),
-                       t_data, hcross_arr, left=0.0, right=0.0).reshape(len(ts), -1)
+    dx = (cavity_data[1,0] - cavity_data[0,0]).real # in m
+    # assert(np.allclose(cavity_data[1,1:3], cavity_data[0,1:3]))
+    dy_ind = np.where(cavity_data[:,1] != cavity_data[0,1])[0][0]
+    dy = (cavity_data[dy_ind,1] - cavity_data[0,1]).real # in m
+    # assert(np.allclose(cavity_data[dy_ind,[0,2]], cavity_data[0,[0,2]]))
+    dz_ind = np.where(cavity_data[:,2] != cavity_data[0,2])[0][0]
+    dz = (cavity_data[dz_ind,2] - cavity_data[0,2]).real # in m
+    # assert(np.allclose(cavity_data[dz_ind,:2], cavity_data[0,:2]))
+    dV = dx * dy * dz # in m^3
+    
+    if threshold:
+        coords, Efield = filter_E(coords, Efield)
+    
+    norm = dV * np.linalg.norm(Efield) ** 2 # in V^2*m
 
-    integrand_err = (hp_mid[:, :, None] * B_plusdir[None, None, :]
-                   + hc_mid[:, :, None] * B_crossdir[None, None, :])  # (Nt, Ns-2, 3)
-    errs = (xps[-1] - xps[0]) / xp_num * np.sqrt(
-        np.einsum('txi,xi->t', integrand_err**2, np.abs(EE_errs)**2)
-    )
+    Efield = Efield / np.sqrt(norm)
 
-    return overlap.real, errs
-"""
+    V = len(Efield) * dV
+
+    print("V=", V, "dV=", dV, "dx=", dx, "dy=", dy, "dz=", dz)
+    # print(coords, Efield)
+
+    return coords, Efield, norm, V
     
 def extract_mode(mode_path, threshold=True):
 
@@ -95,7 +96,16 @@ def extract_mode(mode_path, threshold=True):
             return float(fld)
 
     cavity_data = np.loadtxt(mode_path, delimiter = ',', comments = r'%', converters = conv, dtype = complex)
+                             #, skiprows=1)
     cavity_data[:,:3] *= 1e-3 # rescale coordinates from mm to m
+
+    # order = np.lexsort((
+    # cavity_data[:, 0].real,  # x: fastest
+    # cavity_data[:, 1].real,  # y
+    # cavity_data[:, 2].real   # z: slowest
+    # ))
+
+    # cavity_data = cavity_data[order]
 
     coords = []
     Efield = []
@@ -104,6 +114,7 @@ def extract_mode(mode_path, threshold=True):
             coords.append(data[:3].real)
             Efield.append(data[3:6])
     coords = np.array(coords) # in m
+
     Efield = np.array(Efield) # in V/m
 
     dx = (cavity_data[1,0] - cavity_data[0,0]).real # in m
@@ -121,10 +132,12 @@ def extract_mode(mode_path, threshold=True):
     
     norm = dV * np.linalg.norm(Efield) ** 2 # in V^2*m
 
-    print(norm)
     Efield = Efield / np.sqrt(norm)
 
     V = len(Efield) * dV
+
+    print("V=", V, "dV=", dV, "dx=", dx, "dy=", dy, "dz=", dz)
+    # print(coords, Efield)
 
     return coords, Efield, norm, V
 
@@ -164,11 +177,11 @@ def plot_3d(coords, Efield, directory):
 
     ax.set_xlabel("X [m]", fontsize=12)
     ax.set_ylabel("Y [m]", fontsize=12)
-    ax.set_zlabel("Z [m]", fontsize=12, labelpad=15)
+    ax.set_zlabel("Z [m]", fontsize=12)
 
     # Add colorbar for E-field magnitude
     cbar = fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.1)
-    cbar.set_label("|E| [V/m]", fontsize=12)
+    cbar.set_label("normalised |$E_n(\mathbf{x})$| [$m^{-3/2}$]", fontsize=12)
 
     # Adjust margins to prevent clipping
     fig.subplots_adjust(left=0.0, right=0.85, bottom=0.05, top=0.95)

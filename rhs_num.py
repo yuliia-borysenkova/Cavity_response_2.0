@@ -7,7 +7,7 @@ from tqdm import tqdm
 from scipy import integrate, interpolate, stats
 from gw.utils import load_waveform
 from rhs.utils import compute_k_pol, decompose_B
-from rhs.num_rhs_integration import compute_num_rhs, extract_mode, plot_3d
+from rhs.num_rhs_integration import compute_num_rhs, extract_mode, plot_3d, extract_mode_quax
 from misc.resonant_frequency_matches import find_chirp_match_time
 from plotting.theme import new_figure, save_figure
 from geometry import CylindricalCavity, SphericalCavity, RectangularCavity
@@ -63,6 +63,7 @@ def main():
     
     # Load all lines, skip COMSOL comment lines
     coords, Efield, norm, V = extract_mode(mode_path)
+    print("Volume of cavity: {:.3e} m^3".format(V))
     num = len(coords)
     plot_3d(coords, Efield, save_dir)
     
@@ -102,7 +103,7 @@ def main():
         ell = args.ell
         RHS, error = compute_num_rhs(xpar, xps, ts, num, V, Efield, B_plus, B_cross, hplusDD, hcrossDD, ell)
 
-    xpar_len = np.abs(xpar[-1] - xpar[0])
+    xpar_len = np.max(xpar) - np.min(xpar)
     if ell > xpar_len / args.Ns:
         print(f"[WARN] The errors might be underestimated, as slices are no longer independent. Consider choosing Ns < {args.Ns}")
 

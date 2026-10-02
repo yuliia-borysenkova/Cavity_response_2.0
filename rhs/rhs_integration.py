@@ -3,7 +3,7 @@ from scipy.constants import c as c_cnst
 from scipy.signal import fftconvolve
 
 
-def compute_rhs_time_series(t_data, x_par_arr, E_plus, E_cross, hplus_dd, hcross_dd, Nt, L_char, label="RHS"):
+def compute_rhs_time_series(t_data, x_par_arr, E_plus, E_cross, hplus_dd, hcross_dd, Nt, L_char, label="RHS"): # This could be the culprit of the phase shift, not perfectly centered at 0
     tshift = L_char / c_cnst
     tmin = t_data[0] - tshift
     tmax = t_data[-1] + tshift

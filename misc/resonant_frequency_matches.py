@@ -34,7 +34,10 @@ def load_cavity_frequency_from_run_config(results_dir, cavity_type, mode_name, m
 def find_chirp_match_time(ts, f_cavity, data_dir, data_file_name, t_coal=0.0, rtol=1e-2):
     """Find time when GW frequency matches cavity frequency."""
     cfg = load_gw_config(data_dir, data_file_name)
-    f_gw = gw_frequency_PBH(ts, m_absolute=cfg["m_total"], q=cfg["q"], t_coal=t_coal)
+
+    m = cfg["m_total"] if "m_total" in cfg else cfg["m_absolute"]
+
+    f_gw = gw_frequency_PBH(ts, m_absolute=m, q=cfg["q"], t_coal=t_coal)
     
     valid = np.isfinite(f_gw)
     if not np.any(valid):

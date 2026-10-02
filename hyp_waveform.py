@@ -11,16 +11,16 @@ AU_TO_PC = 1 / 206265  # 1 AU in parsecs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--m-total", type=float, default=3e-5,
+    parser.add_argument("--m-total", type=float, default=1e-6,
                         help="Total mass of the system in solar masses (M_sun).")
     
     parser.add_argument("--q", type=float, default=1,
                         help="Mass ratio m1/m2 (larger mass over smaller mass).")
 
-    parser.add_argument("--initial-eccentricity", type=float, default=1.1,
+    parser.add_argument("--initial-eccentricity", type=float, default=1.592,
                         help="Initial eccentricity of the encounter.")
     
-    parser.add_argument("--b", type=float, default=70.0,
+    parser.add_argument("--b", type=float, default=51.0,
                         help="Impact parameter in GM/c^2.")
     
     
@@ -30,11 +30,11 @@ def parse_args():
     parser.add_argument("--time-final", type=float, default=1e-8,
                         help="Final time of the simulation (s).")   
 
-    parser.add_argument("--Nt", type=int, default=10000,
+    parser.add_argument("--Nt", type=int, default=100000,
                         help="Number of time steps.")   
     
 
-    parser.add_argument("--distance", type=float, default=AU_TO_PC,
+    parser.add_argument("--distance", type=float, default=1e-5,
                     help="Distance to the source in parsecs (default: 1 AU).")
     
     parser.add_argument("--inclination", type=float, default=0.0,
